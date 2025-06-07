@@ -1,0 +1,59 @@
+<!-- Barra de navegación principal adaptada para móviles (más espacio en top y mayor altura) -->
+<nav class="bg-[#A8E6CF] border-b border-gray-200 px-4 pt-16 pb-10 md:py-6 min-h-[110px]">
+  <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
+
+    <!-- Marca o logotipo -->
+    <a href="#" class="flex items-center">
+      <span class="self-center text-xl font-semibold whitespace-nowrap text-gray-800">Ejempo</span>
+    </a>
+
+    <!-- Sección derecha (avatar, dropdown, botón móvil) -->
+    <div class="flex items-center md:order-2 relative">
+
+      <!-- Avatar -->
+      <button (click)="dropdownOpen = !dropdownOpen" type="button"
+        class="flex mr-3 text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300"
+        aria-expanded="false">
+        <div class="w-8 h-8 rounded-full bg-green-700 text-white flex items-center justify-center font-bold uppercase">
+          {{ nombreUsuario.charAt(0) }}
+        </div>
+      </button>
+
+      <!-- Menú desplegable -->
+      <div *ngIf="dropdownOpen"
+        class="z-50 absolute right-0 top-14 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow">
+        <div class="px-4 py-3">
+          <span class="block text-sm text-gray-900">{{nombreUsuario}}</span>
+          <span class="block text-sm font-medium text-gray-500 truncate">{{emailUsuario}}</span>
+        </div>
+        <ul class="py-2">
+          <li><a [routerLink]="'/ejemplo'" class="block px-4 py-2 hover:bg-green-100 text-gray-700">Ejemplo</a></li>
+          <li><a (click)="logout()" class="block px-4 py-2 hover:bg-green-100 text-gray-700 cursor-pointer">Cerrar sesión</a></li>
+        </ul>
+      </div>
+
+      <!-- Botón de menú móvil -->
+      <button (click)="toggleMobileMenu()" type="button"
+        class="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg md:hidden hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-300">
+        <i class="fas" [ngClass]="mobileMenuOpen ? 'fa-times' : 'fa-bars'"></i>
+      </button>
+    </div>
+
+    <!-- Menú móvil / Escritorio -->
+    <div [ngClass]="{'hidden': !mobileMenuOpen}"
+      class="items-center justify-between w-full md:flex md:w-auto md:order-1">
+      <ul
+        class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-[#A8E6CF] md:flex-row md:space-x-8 md:mt-0 md:border-0 md:bg-[#A8E6CF]">
+
+        <!-- Enlaces -->
+        <li>
+          <a routerLink="/inicio" routerLinkActive="text-green-700"
+            class="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-green-100 md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0">
+            Inicio
+          </a>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+</nav>
