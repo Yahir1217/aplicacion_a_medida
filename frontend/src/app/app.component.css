@@ -1,0 +1,47 @@
+/* estilos para sidebar overlay */
+
+#layout-wrapper {
+    position: relative;
+  }
+  
+  app-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 250px;  /* ancho cuando está abierto */
+    background: #222;
+    color: white;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 9999;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+  }
+  
+  /* Cuando el menú está abierto */
+  app-menu.sidebar-open {
+    transform: translateX(0);
+  }
+  
+  /* Contenido principal ocupa siempre todo el ancho */
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+    transition: margin-left 0.3s ease;
+  }
+  
+  /* Si quisieras que el contenido se corra al abrir (opcional): */
+  /* 
+  .sidebar-open ~ .main-content {
+    margin-left: 250px;
+  }
+  */
+  
+  /* Botón para abrir/cerrar menú */
+  .btn-toggle-menu {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 10000;
+  }
+  

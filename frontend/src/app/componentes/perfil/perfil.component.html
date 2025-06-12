@@ -1,0 +1,239 @@
+<div class="container-fluid">
+    <div class="profile-foreground position-relative mx-n4 mt-n4">
+        <div class="profile-wid-bg">
+            <img src="../../../assets/img/image2.png" alt="" class="profile-wid-img" />
+        </div>
+    </div>
+    <div class="pt-4 mb-4 mb-lg-3 pb-lg-4 profile-wrapper">
+        <div class="row g-4">
+            <div class="col-auto">
+                <div class="avatar-lg">
+                  <!-- Si hay foto de perfil -->
+                  <img *ngIf="usuario.foto_perfil; else inicialAvatar"
+                       [src]="usuario.foto_perfil"
+                       alt="user-img"
+                       class="img-thumbnail rounded-circle"
+                       style="width: 64px; height: 64px;" />
+              
+                  <!-- Si no hay foto, muestra inicial con fondo y borde azul -->
+                  <ng-template #inicialAvatar>
+                    <div class="rounded-circle text-white d-flex align-items-center justify-content-center"
+                         style="width: 64px; height: 64px; font-size: 24px; background-color: #0d6efd; border: 2px solid #0a58ca;">
+                      {{ usuario.name ? usuario.name.charAt(0).toUpperCase() : '?' }}
+                    </div>
+                  </ng-template>
+                </div>
+              </div>
+              
+            <!--end col-->
+            <div class="col">
+                <div class="p-2">
+                    <h3 class="text-white mb-1">{{ usuario.name }}</h3>
+                    <p class="text-white text-opacity-75">{{ usuario.roles?.[0] || 'Sin rol' }}</p>                    
+                </div>
+            </div>
+            <!--end col-->
+            <div class="col-12 col-lg-auto order-last order-lg-0">
+            </div>
+            <!--end col-->
+
+        </div>
+        <!--end row-->
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div>
+                <div class="d-flex profile-wrapper">
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-pills animation-nav profile-nav gap-2 gap-lg-3 flex-grow-1" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link fs-14 active" data-bs-toggle="tab" href="#overview-tab" role="tab">
+                                <i class="ri-airplay-fill d-inline-block d-md-none"></i> <span class="d-none d-md-inline-block">Vista general</span>
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="flex-shrink-0">
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#editarPerfilModal">
+                            <i class="ri-edit-box-line align-bottom"></i> Editar perfil
+                          </button>
+                                              </div>
+                </div>
+                <!-- Tab panes -->
+                <div class="tab-content pt-4 text-muted">
+                    <div class="tab-pane active" id="overview-tab" role="tabpanel">
+                        <div class="row">
+                            <div class="col-xxl-3">
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">Info</h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-borderless mb-0">
+                                                <tbody>
+                                                    <tr>
+                                                        <th class="ps-0" scope="row">Nombre :</th>
+                                                        <td class="text-muted">{{ usuario.name }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="ps-0" scope="row">Correo :</th>
+                                                        <td class="text-muted">{{ usuario.email }}</td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <th class="ps-0" scope="row">Fecha de registro</th>
+                                                        <td class="text-muted">{{ usuario.created_at | date:'dd MMM yyyy' }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div><!-- end card body -->
+                                </div><!-- end card -->
+
+                            </div>
+                            <!--end col-->
+                            <div class="col-xxl-9">
+
+
+
+                                <div class="card">
+                                    <div class="card-body">
+                                      <h5 class="card-title">Negocios</h5>
+                                  
+                                      <!-- Validación si hay negocios -->
+                                      <ng-container *ngIf="usuario.negocios?.length > 0; else sinNegocios">
+                                        <!-- Lista de negocios -->
+                                        <div class="swiper-slide" *ngFor="let negocio of usuario.negocios">
+                                          <div class="card profile-project-card shadow-none profile-project-success mb-0">
+                                            <div class="card-body p-4">
+                                              <div class="d-flex">
+                                                <div class="flex-grow-1 text-muted overflow-hidden">
+                                                  <h5 class="fs-15 text-truncate mb-1">
+                                                    <a href="#" class="text-body">{{ negocio.nombre }}</a>
+                                                  </h5>
+                                                  <p class="text-muted text-truncate mb-0">
+                                                    Última actualización:
+                                                    <span class="fw-semibold text-body">
+                                                      {{ negocio.updated_at | date:'dd MMM yyyy HH:mm' }}
+                                                    </span>
+                                                  </p>
+                                                </div>
+                                                <div class="flex-shrink-0 ms-2">
+                                                  <div class="badge"
+                                                       [ngClass]="{
+                                                         'bg-success-subtle text-success': negocio.estado === 'pagado',
+                                                         'bg-warning-subtle text-warning': negocio.estado === 'pendiente',
+                                                         'bg-danger-subtle text-danger': negocio.estado === 'vencido'
+                                                       }"
+                                                       class="fs-11">
+                                                    {{ negocio.estado }}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                  
+                                              <div class="d-flex mt-4">
+                                                <div class="flex-grow-1">
+                                                  <div class="d-flex align-items-center gap-2">
+                                                    <div>
+                                                      <h5 class="fs-13 text-muted mb-0">Descripción:</h5>
+                                                      <p class="mb-0 text-muted">{{ negocio.descripcion }}</p>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                  
+                                              <!-- Botón para ir al negocio -->
+                                              <div class="d-flex justify-content-end mt-3">
+                                                <a routerLink="['/negocio', negocio.id]" class="btn btn-primary btn-sm">
+                                                  Ver negocio
+                                                </a>
+                                              </div>
+                                            </div><!-- end card-body -->
+                                          </div><!-- end card -->
+                                        </div><!-- end swiper-slide -->
+                                      </ng-container>
+                                  
+                                      <!-- Mensaje cuando no hay negocios -->
+                                      <ng-template #sinNegocios>
+                                        <div class="text-center text-muted py-5">
+                                          <i class="bi bi-shop fs-1 mb-3 d-block"></i>
+                                          <p class="mb-0">No tienes negocios registrados todavía.</p>
+                                        </div>
+                                      </ng-template>
+                                  
+                                    </div>
+                                    <!-- end card body -->
+                                  </div><!-- end card -->
+                                  
+
+                            </div>
+                            <!--end col-->
+                        </div>
+                        <!--end row-->
+                    </div>
+  
+
+
+                </div>
+                <!--end tab-content-->
+            </div>
+        </div>
+        <!--end col-->
+    </div>
+    <!--end row-->
+
+</div><!-- container-fluid -->
+
+
+<!-- Modal editar perfil -->
+<div class="modal fade" id="editarPerfilModal" tabindex="-1" aria-labelledby="editarPerfilModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form (ngSubmit)="guardarCambios()" #formEditar="ngForm">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar perfil</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+  
+            <div class="mb-3">
+              <label for="name" class="form-label">Nombre</label>
+              <input type="text" id="name" [(ngModel)]="usuario.name" name="name" class="form-control" required />
+            </div>
+  
+            <div class="mb-3">
+              <label for="email" class="form-label">Correo electrónico</label>
+              <input type="email" id="email" [(ngModel)]="usuario.email" name="email" class="form-control" required />
+            </div>
+  
+            <div class="mb-3">
+              <label for="password" class="form-label">Nueva contraseña</label>
+              <input type="password" id="password" [(ngModel)]="password" name="password" class="form-control" />
+            </div>
+  
+            <div class="mb-3">
+              <label for="confirmarPassword" class="form-label">Confirmar contraseña</label>
+              <input type="password" id="confirmarPassword" [(ngModel)]="confirmarPassword" name="confirmarPassword" class="form-control" />
+            </div>
+  
+            <div class="mb-3">
+                <label for="fotoPerfil" class="form-label">Foto de perfil</label>
+                <input
+                  type="file"
+                  id="fotoPerfil"
+                  (change)="onFileSelected($event)"
+                  class="form-control"
+                  accept="image/*"
+                />
+              </div>
+              
+  
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" [disabled]="formEditar.invalid">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  

@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, OnInit } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import * as echarts from 'echarts';
 import { ApiService } from '../../servicios/api.service';
 import * as XLSX from 'xlsx';
@@ -12,8 +12,7 @@ import * as FileSaver from 'file-saver';
   templateUrl: './vista-principal.component.html',
   styleUrl: './vista-principal.component.css'
 })
-export class VistaPrincipalComponent  {
-  
+export class VistaPrincipalComponent {
 
 
 }

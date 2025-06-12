@@ -21,3 +21,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+# en .gitignore
+/storage/app/credentials/google-drive.json
+

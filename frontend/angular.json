@@ -25,11 +25,33 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css",
-              "node_modules/@fortawesome/fontawesome-free/css/all.min.css"
+  "src/styles.css",
+  "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+  "src/assets/plantilla/css/bootstrap.min.css",
+  "src/assets/plantilla/css/icons.min.css",
+  "src/assets/plantilla/css/app.min.css",
+  "src/assets/plantilla/css/custom.min.css",
+  "src/assets/plantilla/libs/jsvectormap/css/jsvectormap.min.css",
+  "src/assets/plantilla/libs/swiper/swiper-bundle.min.css"
+],
+"scripts": [
+  "src/assets/plantilla/js/layout.js",
+  "src/assets/plantilla/libs/bootstrap/js/bootstrap.bundle.min.js",
+  "src/assets/plantilla/libs/simplebar/simplebar.min.js",
+  "src/assets/plantilla/libs/node-waves/waves.min.js",
+  "src/assets/plantilla/libs/feather-icons/feather.min.js",
+  "src/assets/plantilla/js/pages/plugins/lord-icon-2.1.0.js",
+  "src/assets/plantilla/js/plugins.js",
+  "src/assets/plantilla/libs/apexcharts/apexcharts.min.js",
+  "src/assets/plantilla/libs/jsvectormap/js/jsvectormap.min.js",
+  "src/assets/plantilla/libs/jsvectormap/maps/world-merc.js",
+  "src/assets/plantilla/libs/swiper/swiper-bundle.min.js",
+  "src/assets/plantilla/js/pages/dashboard-ecommerce.init.js",
+  "src/assets/plantilla/libs/metismenujs/metismenujs.min.js",
 
-            ],
-            "scripts": [],
+  "src/assets/plantilla/js/app.js"
+]
+,
             "server": "src/main.server.ts",
             "prerender": true,
             "ssr": {

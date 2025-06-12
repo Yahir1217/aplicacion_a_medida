@@ -1,0 +1,64 @@
+.custom-logo-text img {
+    height: 100px;
+    width: auto; /* Mantiene proporción */
+  }
+  
+  .topbar-user {
+    position: relative;
+  }
+  
+  /* Estilos para el dropdown */
+  .topbar-user .dropdown-menu {
+    position: absolute !important;
+    top: 70px; /* Ajusta esta distancia para que baje más o menos */
+    right: 0;
+    margin-top: 0; /* Anulado para evitar conflictos */
+    z-index: 1050;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+  }
+  
+  /* Mostrar dropdown cuando está activo */
+  .topbar-user.show .dropdown-menu,
+  .topbar-user .dropdown-menu.show {
+    display: block;
+    opacity: 1;
+  }
+  
+  /* Opcional: estilos para dropdown fijo si quieres otro tipo de menú */
+  .fixed-user-dropdown {
+    position: fixed;
+    z-index: 2000;
+    background-color: white;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
+    display: none;
+    min-width: 200px;
+  }
+  
+  .fixed-user-dropdown.show {
+    display: block;
+  }
+
+  .custom-dropdown-menu {
+    position: absolute !important;
+    top: 70px;  /* Ajusta para que baje */
+    right: 0;
+    margin-top: 0 !important;
+    z-index: 1050;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    background: white; /* Agrega fondo si no lo tiene */
+    border-radius: 0.25rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
+    min-width: 200px;
+  }
+  
+  .custom-dropdown-menu.show {
+    display: block;
+    opacity: 1;
+  }
+  
+  

@@ -1,45 +1,43 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import Swal from 'sweetalert2'; 
-import { ApiService } from '../../servicios/api.service'; // Servicio personalizado para acceder a la API
+import Swal from 'sweetalert2';
+import { ApiService } from '../../servicios/api.service';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 
 @Component({
-  selector: 'app-menu', 
-  standalone: true,     
-  templateUrl: './menu.component.html', 
-  imports: [CommonModule, RouterModule, HttpClientModule] 
+  selector: 'app-menu',
+  standalone: true,
+  templateUrl: './menu.component.html',
+  imports: [CommonModule, RouterModule, HttpClientModule]
 })
 export class MenuComponent implements OnInit {
+  mobileMenuOpen = false;
+  dropdownOpen = false;
 
-  // Variables para controlar visibilidad de menús
-  mobileMenuOpen = false; // Menú lateral en modo móvil
-  dropdownOpen = false;   // Menú desplegable del perfil
-
-  // Datos del usuario autenticado
   nombreUsuario: string = '';
   emailUsuario: string = '';
+  usuarioFotoPerfil: string | null = null;  
 
-  // Inyección de dependencias necesarias
-  constructor(private router: Router, private apiService: ApiService) {}
 
-  // Método que se ejecuta al inicializar el componente
+  constructor(
+    private router: Router,
+    private apiService: ApiService,
+    private elementRef: ElementRef
+  ) {}
+
   ngOnInit(): void {
-    // Comprobación para asegurarse que estamos en el entorno del navegador
     if (typeof window !== 'undefined') {
-      const token = sessionStorage.getItem('token'); // Obtener token del sessionStorage
-
-      // Si hay token, intentar recuperar los datos del usuario
+      const token = sessionStorage.getItem('token');
       if (token) {
-        const id = sessionStorage.getItem('user_id'); // Obtener ID del usuario
-
+        const id = sessionStorage.getItem('user_id');
         if (id) {
-          // Llamada al backend para obtener los datos del usuario actual
           this.apiService.obtenerUsuario(id).subscribe({
             next: (data) => {
               this.nombreUsuario = data.name;
               this.emailUsuario = data.email;
+              this.usuarioFotoPerfil = data.foto_perfil;
+
             },
             error: (err) => {
               console.error('Error al obtener usuario:', err);
@@ -54,20 +52,23 @@ export class MenuComponent implements OnInit {
     }
   }
 
-  // Alternar el estado del menú móvil
+  isMobile(): boolean {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= 768;
+    }
+    return false;
+  }
+
   toggleMobileMenu() {
     this.mobileMenuOpen = !this.mobileMenuOpen;
   }
 
-  // Cerrar todos los menús abiertos (útil para manejar eventos globales)
   closeMenus() {
     this.dropdownOpen = false;
     this.mobileMenuOpen = false;
   }
 
-  // Método para cerrar sesión
   logout() {
-    // Mostrar alerta de confirmación
     Swal.fire({
       title: '¿Cerrar sesión?',
       icon: 'warning',
@@ -76,10 +77,31 @@ export class MenuComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        // Borrar datos de sesión y redirigir al login
         sessionStorage.clear();
         this.router.navigate(['/login']);
       }
-    });  
+    });
+  }
+
+  isCollapsed: { [key: string]: boolean } = {
+    sidebarLayouts: false,
+    sidebarTables: false
+  };
+
+  toggleCollapse(menu: string) {
+    this.isCollapsed[menu] = !this.isCollapsed[menu];
+  }
+
+  toggleUserDropdown() {
+    this.dropdownOpen = !this.dropdownOpen;
+  }
+
+  // Cierra el dropdown si se hace clic fuera
+  @HostListener('document:click', ['$event'])
+  handleClickOutside(event: Event): void {
+    const clickedInside = this.elementRef.nativeElement.contains(event.target);
+    if (!clickedInside) {
+      this.dropdownOpen = false;
+    }
   }
 }

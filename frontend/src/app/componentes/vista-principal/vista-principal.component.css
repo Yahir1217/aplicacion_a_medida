@@ -1,0 +1,10 @@
+.menu-dropdown {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  
+  .menu-dropdown.expanded {
+    max-height: 500px; /* o un valor suficiente para mostrar todo */
+  }
+  

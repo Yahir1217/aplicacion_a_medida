@@ -1,0 +1,207 @@
+<!-- usuarios.component.html -->
+<div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title mb-0">Usuarios</h4>
+          </div>
+  
+          <div class="card-body">
+            <div id="userList">
+              <div class="row g-4 mb-3">
+                <div class="col-sm-auto">
+                  <button
+                    type="button"
+                    class="btn btn-success add-btn me-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#userModal"
+                    (click)="limpiarFormulario()"
+                  >
+                    <i class="ri-add-line align-bottom me-1"></i> Añadir Usuario
+                  </button>
+                </div>
+                <div class="col-sm">
+                  <div class="d-flex justify-content-sm-end">
+                    <div class="search-box ms-2">
+                        <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Buscar..."
+                        [(ngModel)]="filtro"
+                        (input)="cargarUsuarios()"
+                      />                      
+                      <i class="ri-search-line search-icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <div class="table-responsive table-card mt-3 mb-1">
+                <table class="table align-middle table-nowrap">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Email</th>
+                      <th>Rol</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let user of usuarios">
+                        <td>
+                            <div class="d-flex gap-2 align-items-center">
+                              <div class="flex-shrink-0">
+                                <ng-container *ngIf="user.foto_perfil; else letraInicial">
+                                  <img
+                                    [src]="user.foto_perfil"
+                                    alt="Foto de {{ user.name }}"
+                                    class="avatar-xs rounded-circle"
+                                    style="width:32px; height:32px; object-fit:cover;"
+                                  />
+                                </ng-container>
+                                <ng-template #letraInicial>
+                                  <div
+                                    class="avatar-xs rounded-circle bg-primary text-white d-flex justify-content-center align-items-center"
+                                    style="width:32px; height:32px; font-weight: bold; font-size: 1rem;"
+                                  >
+                                    {{ user.name?.charAt(0).toUpperCase() }}
+                                  </div>
+                                </ng-template>
+                              </div>
+                              <div class="flex-grow-1">
+                                {{ user?.name || '-' }}
+                              </div>
+                            </div>
+                          </td>
+                                                <td>{{ user?.email || '-' }}</td>
+                      <td>{{ user?.role_nombre || '-' }}</td>
+                      <td>
+                        <button
+                          class="btn btn-sm btn-success me-2"
+                          (click)="seleccionarUsuario(user)"
+                          data-bs-toggle="modal"
+                          data-bs-target="#userModal"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          class="btn btn-sm btn-danger"
+                          (click)="eliminarUsuario(user?.id)"
+                          [disabled]="!user?.id"
+                        >
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="usuarios.length === 0">
+                      <td colspan="4" class="text-center">No se encontraron usuarios.</td>
+                    </tr>
+                  </tbody>
+                  
+                </table>
+              </div>
+            </div>
+          </div> <!-- end card-body -->
+        </div> <!-- end card -->
+      </div>
+    </div>
+  
+    <!-- Modal para agregar/editar usuario -->
+    <div
+      class="modal fade"
+      id="userModal"
+      tabindex="-1"
+      aria-labelledby="userModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <form (ngSubmit)="guardarUsuario()" #usuarioForm="ngForm" autocomplete="off" novalidate>
+            <div class="modal-header bg-light p-3">
+              <h5 class="modal-title" id="userModalLabel">
+                {{ usuarioSeleccionado ? 'Editar Usuario' : 'Nuevo Usuario' }}
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Cerrar"
+              ></button>
+            </div>
+            <div class="modal-body">  
+              <div class="mb-3">
+                <label for="name-field" class="form-label">Nombre</label>
+                <input
+                  type="text"
+                  id="name-field" 
+                  class="form-control"
+                  [(ngModel)]="nuevoUsuario.name"
+                  name="name"
+                  placeholder="Ingrese nombre"
+                  required
+                  #name="ngModel"
+                />
+                <div *ngIf="usuarioForm.submitted && name.invalid" class="invalid-feedback d-block">
+                  El nombre es obligatorio.
+                </div>
+              </div>
+  
+              <div class="mb-3">
+                <label for="email-field" class="form-label">Email</label>
+                <input
+                  type="email"
+                  id="email-field"
+                  class="form-control"
+                  [(ngModel)]="nuevoUsuario.email"
+                  name="email"
+                  placeholder="Ingrese email"
+                  required
+                  #email="ngModel"
+                />
+                <div *ngIf="usuarioForm.submitted && email.invalid" class="invalid-feedback d-block">
+                  El email es obligatorio.
+                </div>
+              </div>
+  
+              <div class="mb-3">
+                <label for="role-field" class="form-label">Rol</label>
+                <select
+                  id="role-field"
+                  class="form-select"
+                  [(ngModel)]="nuevoUsuario.role_id"
+                  name="role_id"
+                  required
+                  #role_id="ngModel"
+                >
+                  <option value="">Seleccione un rol</option>
+                  <option *ngFor="let rol of roles" [value]="rol.id">{{ rol.nombre }}</option>
+                </select>
+                <div *ngIf="usuarioForm.submitted && role_id.invalid" class="invalid-feedback d-block">
+                  El rol es obligatorio.
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-light"
+                data-bs-dismiss="modal"
+                (click)="limpiarFormulario()"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                class="btn btn-success"
+                [disabled]="usuarioForm.invalid"
+              >
+                {{ usuarioSeleccionado ? 'Actualizar' : 'Guardar' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  

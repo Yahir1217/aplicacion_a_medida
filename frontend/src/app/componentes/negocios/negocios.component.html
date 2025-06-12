@@ -1,0 +1,148 @@
+<div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title mb-0">Negocios</h4>
+          </div>
+          <div class="card-body">
+            <div id="negocioList">
+              <div class="row g-4 mb-3">
+                <div class="col-sm-auto">
+                  <button type="button" class="btn btn-success add-btn me-2" data-bs-toggle="modal" data-bs-target="#negocioModal" (click)="limpiarFormulario()">
+                    <i class="ri-add-line align-bottom me-1"></i> Agregar Negocio
+                  </button>
+                </div>
+                <div class="col-sm">
+                  <div class="d-flex justify-content-sm-end">
+                    <div class="search-box ms-2">
+                      <input type="text" class="form-control search" placeholder="Buscar..." [(ngModel)]="filtro" (input)="buscarNegocio()" />
+                      <i class="ri-search-line search-icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <div class="table-responsive table-card mt-3 mb-1">
+                <table class="table align-middle table-nowrap" id="negocioTable">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Descripción</th>
+                      <th>Estado</th>
+                      <th>Usuario Asociado</th> 
+                      <th>Fecha de Pago</th>
+                      <th>Fecha de Vencimiento</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let negocio of negocios">
+                      <td>{{ negocio?.nombre || '-' }}</td>
+                      <td>{{ negocio?.descripcion || '-' }}</td>
+                      <td>{{ negocio?.estado || '-' }}</td>
+                      <td>{{ negocio.user?.name }}</td> 
+                      <td>{{ negocio?.fecha_pago || '-' }}</td>
+                      <td>{{ negocio?.fecha_vencimiento || '-' }}</td>
+                      <td>
+                        <div class="d-flex gap-2">
+                          <button class="btn btn-sm btn-success" (click)="seleccionarNegocio(negocio)" data-bs-toggle="modal" data-bs-target="#negocioModal">
+                            Editar
+                          </button>
+                          <button class="btn btn-sm btn-danger" (click)="eliminarNegocio(negocio?.id)" [disabled]="!negocio?.id">
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr *ngIf="negocios.length === 0">
+                      <td colspan="6" class="text-center">No se encontraron negocios.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Modal -->
+    <div class="modal fade" id="negocioModal" tabindex="-1" aria-labelledby="negocioModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl"> <!-- Aquí agrandamos -->
+          <div class="modal-content">
+            <form (ngSubmit)="guardarNegocio()" #negocioForm="ngForm" autocomplete="off" novalidate>
+              <div class="modal-header bg-light p-3">
+                <h5 class="modal-title" id="negocioModalLabel">
+                  {{ negocioSeleccionado ? 'Editar Negocio' : 'Nuevo Negocio' }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+              </div>
+              <div class="modal-body">
+                <div class="container-fluid">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Usuario</label>
+                      <select class="form-select" [(ngModel)]="nuevoNegocio.user_id" name="user_id" required>
+                        <option [ngValue]="null" disabled>Seleccione un usuario</option>
+                        <option *ngFor="let usuario of usuarios" [ngValue]="usuario.id">
+                          {{ usuario.name }}
+                        </option>
+                      </select>                      
+                    </div>
+      
+                    <div class="col-md-6">
+                      <label class="form-label">Estado</label>
+                      <select class="form-select" [(ngModel)]="nuevoNegocio.estado" name="estado" required>
+                        <option value="inactivo">Inactivo</option>
+                        <option value="vencido">Vencido</option>
+                        <option value="pagado">Pagado</option>
+                      </select>
+                    </div>
+      
+                    <div class="col-md-6">
+                      <label class="form-label">Nombre</label>
+                      <input type="text" class="form-control" [(ngModel)]="nuevoNegocio.nombre" name="nombre" required />
+                    </div>
+      
+                    <div class="col-md-6">
+                      <label class="form-label">Servicio a domicilio</label>
+                      <select class="form-select" [(ngModel)]="nuevoNegocio.servicio_domicilio" name="servicio_domicilio">
+                        <option [ngValue]="true">Sí</option>
+                        <option [ngValue]="false">No</option>
+                      </select>
+                    </div>
+      
+                    <div class="col-12">
+                      <label class="form-label">Descripción</label>
+                      <textarea class="form-control" [(ngModel)]="nuevoNegocio.descripcion" name="descripcion" rows="3"></textarea>
+                    </div>
+      
+                    <div class="col-12">
+                      <label class="form-label">Dirección</label>
+                      <input type="text" class="form-control" [(ngModel)]="nuevoNegocio.direccion" name="direccion" />
+                    </div>
+      
+                    <div class="col-md-6">
+                      <label class="form-label">Fecha de Pago</label>
+                      <input type="date" class="form-control" [(ngModel)]="nuevoNegocio.fecha_pago" name="fecha_pago" />
+                    </div>
+      
+                    <div class="col-md-6">
+                      <label class="form-label">Fecha de Vencimiento</label>
+                      <input type="date" class="form-control" [(ngModel)]="nuevoNegocio.fecha_vencimiento" name="fecha_vencimiento" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal" (click)="limpiarFormulario()">Cancelar</button>
+                <button type="submit" class="btn btn-success" [disabled]="negocioForm.invalid">
+                  {{ negocioSeleccionado ? 'Actualizar' : 'Guardar' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      

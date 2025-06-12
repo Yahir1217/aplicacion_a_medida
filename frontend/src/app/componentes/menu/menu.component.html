@@ -1,59 +1,207 @@
-<!-- Barra de navegación principal adaptada para móviles (más espacio en top y mayor altura) -->
-<nav class="bg-[#A8E6CF] border-b border-gray-200 px-4 pt-16 pb-10 md:py-6 min-h-[110px]">
-  <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
+<!doctype html>
+<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="full" data-sidebar-image="none" data-preloader="disable">
 
-    <!-- Marca o logotipo -->
-    <a href="#" class="flex items-center">
-      <span class="self-center text-xl font-semibold whitespace-nowrap text-gray-800">Ejempo</span>
-    </a>
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard | Velzon - Admin & Dashboard Template</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
+  <meta content="Themesbrand" name="author" />
+</head>
 
-    <!-- Sección derecha (avatar, dropdown, botón móvil) -->
-    <div class="flex items-center md:order-2 relative">
+<body>
+  <!-- Begin page -->
+  <div id="layout-wrapper">
 
-      <!-- Avatar -->
-      <button (click)="dropdownOpen = !dropdownOpen" type="button"
-        class="flex mr-3 text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300"
-        aria-expanded="false">
-        <div class="w-8 h-8 rounded-full bg-green-700 text-white flex items-center justify-center font-bold uppercase">
-          {{ nombreUsuario.charAt(0) }}
+    <!-- ========== HEADER ========== -->
+    <header id="page-topbar">
+      <div class="layout-width">
+        <div class="navbar-header d-flex justify-content-between align-items-center">
+          <!-- Logo -->
+          <div class="d-flex align-items-center">
+            <div class="navbar-brand-box horizontal-logo">
+              <!-- Logo opcional -->
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center">
+            <!-- Search para móvil -->
+            <div class="dropdown d-md-none topbar-head-dropdown header-item">
+              <button class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle" id="page-header-search-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="bx bx-search fs-22"></i>
+              </button>
+              <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-search-dropdown">
+                <form class="p-3">
+                  <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search ..." aria-label="Search" />
+                    <button class="btn btn-primary" type="submit"><i class="mdi mdi-magnify"></i></button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Carrito -->
+            <div class="dropdown topbar-head-dropdown ms-1 header-item">
+              <button class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle" id="page-header-cart-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="bx bx-shopping-bag fs-22"></i>
+                <span class="position-absolute topbar-badge cartitem-badge fs-10 translate-middle badge rounded-pill bg-info">0</span>
+              </button>
+            </div>
+
+            <!-- Notificaciones -->
+            <div class="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
+              <button class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="bx bx-bell fs-22"></i>
+                <span class="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger">0</span>
+              </button>
+            </div>
+
+            <!-- Usuario -->
+            <div class="dropdown ms-sm-3 header-item topbar-user" [class.show]="dropdownOpen" style="position: relative;">
+              <button class="btn" id="page-header-user-dropdown" (click)="dropdownOpen = !dropdownOpen" aria-haspopup="true" [attr.aria-expanded]="dropdownOpen">
+                <span class="d-flex align-items-center">
+                <!-- Si hay foto de perfil -->
+                <div *ngIf="nombreUsuario && usuarioFotoPerfil; else mostrarInicial"
+                    style="width: 64px; height: 64px; border-radius: 50%; border: 2px solid #0d6efd; display: inline-flex; align-items: center; justify-content: center;">
+                  <img [src]="usuarioFotoPerfil" 
+                      alt="Avatar" 
+                      style="width: 60px; height: 60px; border-radius: 50%;" />
+                </div>
+
+                <!-- Si no hay foto, muestra la inicial -->
+                <ng-template #mostrarInicial>
+                  <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                      style="width: 64px; height: 64px; font-size: 24px; border: 2px solid #0d6efd; box-sizing: border-box;">
+                    {{ nombreUsuario ? nombreUsuario.charAt(0).toUpperCase() : '?' }}
+                  </div>
+                </ng-template>
+                  <span class="text-start ms-xl-2">
+                    <span class="d-none d-xl-inline-block ms-1 fw-medium user-name-text">{{ nombreUsuario || 'Usuario' }}</span>
+                    <span class="d-none d-xl-block ms-1 fs-12 user-name-sub-text">{{ emailUsuario || 'Rol' }}</span>
+                  </span>
+                </span>
+              </button>
+
+              <div class="dropdown-menu dropdown-menu-end" [class.show]="dropdownOpen" aria-labelledby="page-header-user-dropdown">
+                <h6 class="dropdown-header">Bienvenido {{ nombreUsuario || 'Usuario' }}!</h6>
+                <a class="dropdown-item" routerLink="/perfil">
+                  <i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i>
+                  <span class="align-middle">Perfil</span>
+                </a>
+                <a class="dropdown-item" routerLink="/messages">
+                  <i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i>
+                  <span class="align-middle">Mensajes</span>
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" routerLink="/settings">
+                  <i class="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i>
+                  <span class="align-middle">Configuración</span>
+                </a>
+                <a class="dropdown-item" (click)="logout()" style="cursor:pointer;">
+                  <i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i>
+                  <span class="align-middle">Cerrar sesión</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
         </div>
-      </button>
+      </div>
+    </header>
 
-      <!-- Menú desplegable -->
-      <div *ngIf="dropdownOpen"
-        class="z-50 absolute right-0 top-14 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow">
-        <div class="px-4 py-3">
-          <span class="block text-sm text-gray-900">{{nombreUsuario}}</span>
-          <span class="block text-sm font-medium text-gray-500 truncate">{{emailUsuario}}</span>
+    <!-- ========== MODAL NOTIFICACIÓN ========== -->
+    <div id="removeNotificationModal" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <h4>¿Estás seguro?</h4>
+            <p class="text-muted">¿Realmente quieres eliminar esta notificación?</p>
+            <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
+              <button class="btn w-sm btn-light" data-bs-dismiss="modal">Cerrar</button>
+              <button class="btn w-sm btn-danger" id="delete-notification">Sí, eliminar</button>
+            </div>
+          </div>
         </div>
-        <ul class="py-2">
-          <li><a [routerLink]="'/ejemplo'" class="block px-4 py-2 hover:bg-green-100 text-gray-700">Ejemplo</a></li>
-          <li><a (click)="logout()" class="block px-4 py-2 hover:bg-green-100 text-gray-700 cursor-pointer">Cerrar sesión</a></li>
-        </ul>
+      </div>
+    </div>
+
+    <!-- ========== SIDEBAR ========== -->
+    <div class="app-menu navbar-menu">
+      <div class="navbar-brand-box d-flex align-items-center" style="height: 60px;">
+        <a routerLink="/inicio" class="logo logo-light d-flex align-items-center">
+          <span class="logo-sm">
+            <img src="assets/plantilla/images/icono.png" alt="Logo pequeño" height="22" />
+          </span>
+          <span class="custom-logo-text ms-2">
+            <img src="assets/plantilla/images/logo_fondo_2.png" alt="Logo letras" style="height:50px;" />
+          </span>
+        </a>
       </div>
 
-      <!-- Botón de menú móvil -->
-      <button (click)="toggleMobileMenu()" type="button"
-        class="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg md:hidden hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-300">
-        <i class="fas" [ngClass]="mobileMenuOpen ? 'fa-times' : 'fa-bars'"></i>
-      </button>
-    </div>
+      <div id="scrollbar">
+        <div class="container-fluid">
+          <!-- Botón menú móvil -->
 
-    <!-- Menú móvil / Escritorio -->
-    <div [ngClass]="{'hidden': !mobileMenuOpen}"
-      class="items-center justify-between w-full md:flex md:w-auto md:order-1">
-      <ul
-        class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-[#A8E6CF] md:flex-row md:space-x-8 md:mt-0 md:border-0 md:bg-[#A8E6CF]">
 
-        <!-- Enlaces -->
-        <li>
-          <a routerLink="/inicio" routerLinkActive="text-green-700"
-            class="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-green-100 md:hover:bg-transparent md:border-0 md:hover:text-green-700 md:p-0">
-            Inicio
-          </a>
-        </li>
+          <!-- Menú -->
+          <ul id="navbar-nav" class="navbar-nav" [class.d-none]="!mobileMenuOpen && isMobile()">
+            <li class="nav-item">
+              <a routerLink="/inicio" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+                <i class="las la-home"></i>
+                <span>Inicio</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a routerLink="/roles" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+                <i class="las la-file-alt"></i>
+                <span>roles</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a routerLink="/usuarios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+                <i class="las la-file-alt"></i>
+                <span>Usuarios</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a routerLink="/categorias" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+                <i class="las la-file-alt"></i>
+                <span>Categorias</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a routerLink="/negocios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+                <i class="las la-file-alt"></i>
+                <span>negocios</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
 
-      </ul>
+      <div class="sidebar-background"></div>
     </div>
   </div>
-</nav>
+
+  <!-- JS Scripts -->
+  <script src="assets/plantilla/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/plantilla/libs/simplebar/simplebar.min.js"></script>
+  <script src="assets/plantilla/libs/node-waves/waves.min.js"></script>
+  <script src="assets/plantilla/libs/feather-icons/feather.min.js"></script>
+  <script src="assets/plantilla/js/pages/plugins/lord-icon-2.1.0.js"></script>
+  <script src="assets/plantilla/js/layout.js"></script>
+  <script src="assets/plantilla/js/app.js"></script>
+
+  <!-- MetisMenu -->
+  <script src="https://cdn.jsdelivr.net/npm/metismenujs@1.2.1/dist/metismenujs.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      new MetisMenu("#navbar-nav");
+    });
+  </script>
+</body>
+
+</html>

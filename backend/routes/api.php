@@ -3,9 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Api\SalaController;
-use App\Http\Controllers\Api\ReservaController;
+use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UsuarioController;
+use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\NegocioController;
 
 /**
  * API Routes
@@ -30,4 +31,30 @@ Route::middleware('auth:api')->group(function () {
 
     // Obtener nombre y correo electrónico de un usuario por ID
     Route::get('/usuario/{id}', [UsuarioController::class, 'obtenerUsuario']);
+
+
+    Route::get('/roles', [RoleController::class, 'index']);
+    Route::post('/roles', [RoleController::class, 'store']);
+    Route::put('/roles/{id}', [RoleController::class, 'update']);
+    Route::delete('/roles/{id}', [RoleController::class, 'destroy']);   
+
+    Route::get('/usuarios', [UsuarioController::class, 'index']);
+    Route::post('/usuarios', [UsuarioController::class, 'store']);
+    Route::put('/usuarios/{id}', [UsuarioController::class, 'update']);
+    Route::delete('/usuarios/{id}', [UsuarioController::class, 'destroy']);
+
+    Route::get('/categorias', [CategoriaController::class, 'index']);
+    Route::post('/categorias', [CategoriaController::class, 'store']);
+    Route::put('/categorias/{id}', [CategoriaController::class, 'update']);
+    Route::delete('/categorias/{id}', [CategoriaController::class, 'destroy']);
+
+    Route::get('/negocios', [NegocioController::class, 'index']);
+    Route::post('/negocios', [NegocioController::class, 'store']);
+    Route::put('/negocios/{id}', [NegocioController::class, 'update']);
+    Route::delete('/negocios/{id}', [NegocioController::class, 'destroy']);
+
+    Route::get('/usuario/perfil/{id}', [UsuarioController::class, 'obtenerPerfil']);
+    Route::post('/usuarios/{id}/actualizar', [UsuarioController::class, 'actualizar']);
+
+
 });
