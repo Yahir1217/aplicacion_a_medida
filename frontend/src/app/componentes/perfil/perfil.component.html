@@ -9,11 +9,13 @@
             <div class="col-auto">
                 <div class="avatar-lg">
                   <!-- Si hay foto de perfil -->
-                  <img *ngIf="usuario.foto_perfil; else inicialAvatar"
-                       [src]="usuario.foto_perfil"
-                       alt="user-img"
-                       class="img-thumbnail rounded-circle"
-                       style="width: 64px; height: 64px;" />
+                  <img *ngIf="fotoPerfilSegura; else inicialAvatar"
+                  [src]="fotoPerfilSegura"
+                  alt="user-img"
+                  class="img-thumbnail rounded-circle"
+                  style="width: 64px; height: 64px;" />
+             
+             
               
                   <!-- Si no hay foto, muestra inicial con fondo y borde azul -->
                   <ng-template #inicialAvatar>
@@ -81,7 +83,7 @@
                                                     </tr>
 
                                                     <tr>
-                                                        <th class="ps-0" scope="row">Fecha de registro</th>
+                                                        <th class="ps-0" scope="row">Registrado:</th>
                                                         <td class="text-muted">{{ usuario.created_at | date:'dd MMM yyyy' }}</td>
                                                     </tr>
                                                 </tbody>

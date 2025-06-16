@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use App\Services\GoogleDriveService;
 use Illuminate\Support\Facades\Storage;
-
+use Cloudinary\Configuration\Configuration;
+use Cloudinary\Cloudinary as CloudinaryClient;
 
 class UsuarioController extends Controller
 {
@@ -130,65 +131,82 @@ class UsuarioController extends Controller
         
     }
 
-    public function actualizar(Request $request, $id, GoogleDriveService $googleDrive)
+
+    public function actualizar(Request $request, $id)
     {
+        \Log::info('Inicio función actualizar', ['id' => $id]);
+    
         try {
-            // Validar los datos del request
-            $request->validate([
-                'nombre' => 'required|string|max:255',
-                'correo' => [
-                    'required',
-                    'email',
-                    Rule::unique('users', 'email')->ignore($id),
-                ],
-                'password' => 'nullable|string|min:6',
-                'foto' => 'nullable|image|max:5120', // CAMBIO AQUÍ
-            ]);
+            $usuario = User::find($id);
     
-            // Obtener el usuario
-            $usuario = User::findOrFail($id);
-    
-            // Actualizar datos básicos
-            $usuario->name = $request->nombre;
-            $usuario->email = $request->correo;
-    
-            // Actualizar contraseña si se proporciona
-            if ($request->filled('password')) {
-                $usuario->password = bcrypt($request->password);
+            if (!$usuario) {
+                \Log::error('Usuario no encontrado');
+                return response()->json(['error' => 'Usuario no encontrado'], 404);
             }
     
-            // Procesar la foto si viene incluida y es válida
-            if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
-                $foto = $request->file('foto');
-                \Log::info('Foto recibida', [
-                    'nombre' => $foto->getClientOriginalName(),
-                    'tipo' => $foto->getMimeType(),
-                    'tamaño' => $foto->getSize(),
+            \Log::info('Usuario encontrado', [
+                'id' => $usuario->id,
+                'name' => $usuario->name,
+                'email' => $usuario->email
+            ]);
+    
+            if ($request->has('name')) {
+                $usuario->name = $request->name;
+                \Log::info('Nombre actualizado', ['nuevo_name' => $request->name]);
+            }
+    
+            if ($request->has('email')) {
+                $usuario->email = $request->email;
+                \Log::info('Correo actualizado', ['nuevo_email' => $request->email]);
+            }
+    
+            if ($request->hasFile('foto')) {
+                \Log::info('Archivo de imagen recibido');
+    
+                $archivo = $request->file('foto');
+                $correo = $usuario->email ?? 'sin_email';
+                $carpeta = 'aplicacion_a_medida/' . $correo;
+    
+                $cloudinary = new CloudinaryClient([
+                    'cloud' => [
+                        'cloud_name' => config('cloudinary.cloud.cloud_name'),
+                        'api_key'    => config('cloudinary.cloud.api_key'),
+                        'api_secret' => config('cloudinary.cloud.api_secret'),
+                    ],
+                    'url' => [
+                        'secure' => true,
+                    ],
                 ]);
     
-                $url = $googleDrive->uploadFile($foto, $usuario->email);
+                $uploadResult = $cloudinary->uploadApi()->upload($archivo->getRealPath(), [
+                    'folder' => $carpeta,
+                    'overwrite' => true,
+                    'resource_type' => 'image'
+                ]);
     
-                if ($url !== false) {
-                    $usuario->foto_perfil = $url;
-                } else {
-                    \Log::warning('No se pudo subir la foto del usuario a Google Drive para usuario ID: ' . $usuario->id);
+                \Log::info('Respuesta de Cloudinary', ['uploadResult' => $uploadResult]);
+    
+                if (!isset($uploadResult['secure_url'])) {
+                    throw new \Exception('Cloudinary no devolvió una URL segura.');
                 }
+    
+                $url = $uploadResult['secure_url'];
+                $usuario->foto_perfil = $url;
+    
+                \Log::info('Foto actualizada en Cloudinary', ['url' => $url]);
             }
     
-            // Guardar los cambios
             $usuario->save();
+            \Log::info('Usuario actualizado correctamente');
     
-            return response()->json([
-                'message' => 'Usuario actualizado correctamente',
-                'foto_url' => $usuario->foto_perfil
-            ]);
+            return response()->json(['mensaje' => 'Usuario actualizado correctamente'], 200);
     
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             \Log::error('Error al actualizar usuario: ' . $e->getMessage());
-            return response()->json(['error' => 'Error interno en el servidor'], 500);
+            return response()->json(['error' => 'Error al actualizar usuario'], 500);
         }
     }
-    
+
+
 }
+ 

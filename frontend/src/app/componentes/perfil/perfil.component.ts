@@ -3,6 +3,7 @@ import { ApiService } from '../../servicios/api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-perfil',
@@ -20,11 +21,12 @@ export class PerfilComponent implements OnInit {
     negocios: []
   };
 
+  fotoPerfilSegura: SafeResourceUrl = '';
   password: string = '';
   confirmarPassword: string = '';
   fotoPerfilFile: File | null = null;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private sanitizer: DomSanitizer) {}
 
   ngOnInit(): void {
     const token = sessionStorage.getItem('token');
@@ -50,6 +52,14 @@ export class PerfilComponent implements OnInit {
           negocios: data.negocios || [],
           created_at: data.created_at || ''
         };
+
+        if(this.usuario.foto_perfil) {
+          this.fotoPerfilSegura = this.sanitizer.bypassSecurityTrustResourceUrl(this.usuario.foto_perfil);
+        } else {
+          this.fotoPerfilSegura = ''; // O la imagen por defecto que quieras mostrar
+        }
+
+        console.log('Foto de perfil recibida:', this.usuario.foto_perfil);
       },
       error: (err) => {
         console.error('Error al obtener usuario:', err);
@@ -65,11 +75,9 @@ export class PerfilComponent implements OnInit {
     } else {
       console.warn('No se seleccionó ningún archivo.');
     }
-    // Limpiar input para que permita re-seleccionar el mismo archivo si se desea
+    // Limpiar input para permitir re-seleccionar el mismo archivo si se desea
     input.value = '';
   }
-  
-  
 
   guardarCambios(): void {
     if (this.password && this.password !== this.confirmarPassword) {
@@ -80,8 +88,7 @@ export class PerfilComponent implements OnInit {
       });
       return;
     }
-    console.log('Usuario:', this.usuario);
-
+  
     const formData = new FormData();
     formData.append('nombre', this.usuario.name);
     formData.append('correo', this.usuario.email);
@@ -94,13 +101,6 @@ export class PerfilComponent implements OnInit {
       formData.append('foto', this.fotoPerfilFile, this.fotoPerfilFile.name);
     }
   
-    // Verifica lo que se está agregando al FormData (sin usar .entries())
-    console.log('FormData:');
-    console.log('nombre:', this.usuario.name);
-    console.log('correo:', this.usuario.email);
-    console.log('password:', this.password);
-    console.log('foto:', this.fotoPerfilFile?.name ?? 'No seleccionada');
-  
     const id = sessionStorage.getItem('user_id');
     if (!id) return;
   
@@ -110,10 +110,15 @@ export class PerfilComponent implements OnInit {
           icon: 'success',
           title: 'Perfil actualizado',
           text: 'Tus datos se actualizaron correctamente.'
+        }).then(() => {
+          // 🔄 Refrescar la página completamente
+          window.location.reload();
         });
-        if(res.foto_url) {
-          this.usuario.foto_perfil = res.foto_url;
-        }
+  
+        // Si NO recargaras, podrías actualizar la imagen sin recarga con esto:
+        // this.usuario.foto_perfil = res.usuario.foto_perfil;
+        // this.fotoPerfilSegura = this.sanitizer.bypassSecurityTrustResourceUrl(this.usuario.foto_perfil);
+  
         this.password = '';
         this.confirmarPassword = '';
         this.fotoPerfilFile = null;
@@ -121,7 +126,6 @@ export class PerfilComponent implements OnInit {
       error: (err) => {
         console.error('Error completo:', err);
         if (err.status === 422) {
-          console.error('Errores de validación:', err.error.errors);
           const errores = err.error.errors;
           let mensaje = '';
           for (let campo in errores) {
@@ -132,11 +136,7 @@ export class PerfilComponent implements OnInit {
           Swal.fire('Error', 'Ocurrió un error al actualizar el perfil', 'error');
         }
       }
-      
-      
     });
   }
-  
-  
   
 }

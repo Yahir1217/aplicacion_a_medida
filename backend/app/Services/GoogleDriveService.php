@@ -17,52 +17,60 @@ class GoogleDriveService
     {
         $this->client = new Client();
         $this->client->setAuthConfig(storage_path('app/credentials/google-drive.json'));
-        $this->client->addScope(Drive::DRIVE);
+        $this->client->addScope(Drive::DRIVE_FILE);
+        $this->client->addScope('https://www.googleapis.com/auth/drive');
         $this->service = new Drive($this->client);
     }
 
     /**
-     * Sube un archivo a Google Drive dentro de la carpeta 'aplicacion_a_medida' y una subcarpeta con el correo del usuario.
-     * Retorna la URL pública o false en caso de error.
-     *
-     * @param UploadedFile $file
-     * @param string $userEmail
-     * @return string|false
+     * Sube un archivo a Google Drive dentro de la carpeta del usuario.
      */
     public function uploadFile(UploadedFile $file, string $userEmail)
     {
         try {
-            // Obtener o crear carpeta principal
             $parentFolderId = $this->getOrCreateFolder('aplicacion_a_medida');
-
-            // Obtener o crear subcarpeta usuario
             $userFolderId = $this->getOrCreateFolder($userEmail, $parentFolderId);
-
+    
+            $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+    
             $fileMetadata = new DriveFile([
-                'name' => time() . '_' . $file->getClientOriginalName(),
+                'name' => $fileName,
                 'parents' => [$userFolderId],
             ]);
-
+    
             $content = file_get_contents($file->getRealPath());
+    
             if ($content === false) {
-                Log::error("No se pudo leer el archivo para subir a Google Drive.");
+                Log::error("No se pudo leer el archivo.");
                 return false;
             }
-
+    
+            // Subir archivo
             $uploadedFile = $this->service->files->create($fileMetadata, [
                 'data' => $content,
                 'mimeType' => $file->getMimeType(),
                 'uploadType' => 'multipart',
-                'fields' => 'id',
+                'fields' => 'id, webContentLink',
             ]);
-
-            // Hacer la imagen pública
-            $this->service->permissions->create($uploadedFile->id, [
-                'role' => 'reader',
+            
+    
+            // Hacer público el archivo de forma correcta y segura
+            $permission = new \Google\Service\Drive\Permission([
                 'type' => 'anyone',
+                'role' => 'reader',
+                'allowFileDiscovery' => false // Asegura que sea público sin ser indexado
             ]);
 
-            return 'https://drive.google.com/uc?id=' . $uploadedFile->id;
+            $this->service->permissions->create(
+                $uploadedFile->id,
+                $permission,
+                ['fields' => 'id'] // 👈 importante
+            );
+
+// URL pública
+Log::info("Archivo subido a Drive: ID={$uploadedFile->id}");
+
+return "https://drive.google.com/uc?export=view&id={$uploadedFile->id}";
 
         } catch (\Exception $e) {
             Log::error('Error al subir archivo a Google Drive: ' . $e->getMessage());
@@ -70,17 +78,9 @@ class GoogleDriveService
         }
     }
 
-    /**
-     * Busca o crea una carpeta en Drive.
-     * 
-     * @param string $folderName
-     * @param string|null $parentId
-     * @return string
-     * @throws \Exception
-     */
     private function getOrCreateFolder(string $folderName, string $parentId = null): string
     {
-        $query = "name='{$folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false";
+        $query = "name = '{$folderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
         if ($parentId) {
             $query .= " and '{$parentId}' in parents";
         }
@@ -88,7 +88,7 @@ class GoogleDriveService
         $response = $this->service->files->listFiles([
             'q' => $query,
             'spaces' => 'drive',
-            'fields' => 'files(id, name)', // optimiza la consulta
+            'fields' => 'files(id)',
         ]);
 
         if (count($response->files) > 0) {

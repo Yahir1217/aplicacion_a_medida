@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UsuarioController;
 use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\NegocioController;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 /**
  * API Routes
@@ -58,3 +59,6 @@ Route::middleware('auth:api')->group(function () {
 
 
 });
+
+
+
