@@ -146,39 +146,63 @@
           <!-- Botón menú móvil -->
 
 
-          <!-- Menú -->
-          <ul id="navbar-nav" class="navbar-nav" [class.d-none]="!mobileMenuOpen && isMobile()">
-            <li class="nav-item">
-              <a routerLink="/inicio" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-                <i class="las la-home"></i>
-                <span>Inicio</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a routerLink="/roles" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-                <i class="las la-file-alt"></i>
-                <span>roles</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a routerLink="/usuarios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-                <i class="las la-file-alt"></i>
-                <span>Usuarios</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a routerLink="/categorias" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-                <i class="las la-file-alt"></i>
-                <span>Categorias</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a routerLink="/negocios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-                <i class="las la-file-alt"></i>
-                <span>negocios</span>
-              </a>
-            </li>
-          </ul>
+        <!-- Menú -->
+        <ul id="navbar-nav" class="navbar-nav" [class.d-none]="!mobileMenuOpen && isMobile()">
+          <!-- 🔽 Separador -->
+          <li class="menu-title mt-3 mb-1 px-3 text-muted text-uppercase fw-bold small">
+            Cliente
+          </li>          
+          <li class="nav-item">
+            <a routerLink="/inicio" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+              <i class="las la-home"></i>
+              <span>Inicio</span>
+            </a>
+          </li>
+
+          <!-- 🔽 Separador -->
+          <li class="menu-title mt-3 mb-1 px-3 text-muted text-uppercase fw-bold small">
+            Administrador
+          </li>
+
+          <!-- Nueva ruta -->
+          <li class="nav-item">
+            <a routerLink="/inicio-administrador" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+              <i class="las la-tools"></i>
+              <span>Inicio Administrador</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/roles" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+              <i class="las la-file-alt"></i>
+              <span>Roles</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/usuarios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+              <i class="las la-file-alt"></i>
+              <span>Usuarios</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/categorias" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+              <i class="las la-file-alt"></i>
+              <span>Categorías</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/negocios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+              <i class="las la-file-alt"></i>
+              <span>Negocios</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/reportes" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+              <i class="las la-file-alt"></i>
+              <span>Reportes de publicaciones</span>
+            </a>
+          </li>
+        </ul>
+
         </div>
       </div>
 

@@ -11,7 +11,7 @@ class CreateNegocioRedesSocialesTable extends Migration
         Schema::create('negocio_redes_sociales', function (Blueprint $table) {
             $table->id();
             $table->foreignId('negocio_id')->constrained('negocios')->onDelete('cascade');
-            $table->enum('tipo', ['facebook', 'instagram', 'tiktok']);
+            $table->enum('tipo', ['facebook', 'instagram', 'tiktok', 'whatsapp']);
             $table->string('url');
             $table->timestamps();
         });

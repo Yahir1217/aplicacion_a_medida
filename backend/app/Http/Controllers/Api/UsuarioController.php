@@ -12,6 +12,11 @@ use App\Services\GoogleDriveService;
 use Illuminate\Support\Facades\Storage;
 use Cloudinary\Configuration\Configuration;
 use Cloudinary\Cloudinary as CloudinaryClient;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+
+
 
 class UsuarioController extends Controller
 {
@@ -121,6 +126,7 @@ class UsuarioController extends Controller
             'id' => $usuario->id,
             'name' => $usuario->name,
             'email' => $usuario->email,
+            'email_verified_at' => $usuario->email_verified_at,
             'password' => $usuario->password,
             'foto_perfil' => $usuario->foto_perfil,
             'roles' => $usuario->roles->pluck('nombre'),
@@ -129,7 +135,7 @@ class UsuarioController extends Controller
             'updated_at' => $usuario->updated_at,
         ]);
         
-    }
+    } 
 
 
     public function actualizar(Request $request, $id)
@@ -206,6 +212,59 @@ class UsuarioController extends Controller
             return response()->json(['error' => 'Error al actualizar usuario'], 500);
         }
     }
+
+    public function enviarCodigoVerificacion($id)
+    {
+        $usuario = User::find($id);
+
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+
+        // Generar un código de 6 caracteres: letras y números
+        $codigo = Str::random(6);
+
+        // Guardar el código en remember_token
+        $usuario->remember_token = $codigo;
+        $usuario->save();
+
+        // Enviar correo con el código
+        Mail::to($usuario->email)->send(new \App\Mail\CodigoVerificacionMail($codigo, $usuario->name));
+
+        return response()->json(['mensaje' => 'Correo enviado correctamente']);
+    }
+
+    public function verificarCodigoEmail(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'id' => 'required|integer|exists:users,id',
+        'codigo' => 'required|string|size:6',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['message' => 'Datos inválidos'], 422);
+    }
+
+    $user = User::find($request->id);
+
+    if (!$user) {
+        return response()->json(['message' => 'Usuario no encontrado'], 404);
+    }
+
+    if ($user->remember_token !== $request->codigo) {
+        return response()->json(['message' => 'Código incorrecto'], 403);
+    }
+
+    // Actualizar email_verified_at si es null
+    if (is_null($user->email_verified_at)) {
+        $user->email_verified_at = Carbon::now();
+        $user->remember_token = null; // opcional: limpiar código
+        $user->save();
+    }
+
+    return response()->json(['message' => 'Correo verificado con éxito']);
+}
+
 
 
 }

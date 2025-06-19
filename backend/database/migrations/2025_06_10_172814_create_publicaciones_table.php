@@ -12,6 +12,8 @@ return new class extends Migration {
             $table->foreignId('negocio_id')->constrained('negocios')->onDelete('cascade');
             $table->text('descripcion');
             $table->string('pdf')->nullable();
+            $table->boolean('destacado')->default(false); // Campo sí/no
+            $table->unsignedInteger('orden')->nullable(); // Solo se usará si está destacado
             $table->timestamps();
         });
     }
@@ -21,4 +23,5 @@ return new class extends Migration {
         Schema::dropIfExists('publicaciones');
     }
 };
+
 

@@ -7,16 +7,16 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('historias_negocio', function (Blueprint $table) {
+        Schema::create('negocio_telefonos', function (Blueprint $table) {
             $table->id(); // id BIGINT (PK)
             $table->foreignId('negocio_id')->constrained('negocios')->onDelete('cascade'); // FK → negocios.id
-            $table->string('titulo'); // título
+            $table->string('telefono'); // campo para número de teléfono
             $table->timestamps(); // created_at y updated_at
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('historias_negocio');
+        Schema::dropIfExists('negocio_telefonos');
     }
 };

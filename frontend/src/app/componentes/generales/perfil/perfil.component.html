@@ -3,7 +3,7 @@
         <div class="profile-wid-bg">
             <img src="../../../assets/img/image2.png" alt="" class="profile-wid-img" />
         </div>
-    </div>
+    </div> 
     <div class="pt-4 mb-4 mb-lg-3 pb-lg-4 profile-wrapper">
         <div class="row g-4">
             <div class="col-auto">
@@ -55,11 +55,27 @@
                             </a>
                         </li>
                     </ul>
-                    <div class="flex-shrink-0">
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#editarPerfilModal">
-                            <i class="ri-edit-box-line align-bottom"></i> Editar perfil
-                          </button>
-                                              </div>
+                    <div class="flex-shrink-0 flex items-center gap-2">
+                      <!-- Botón Editar perfil (solo habilitado si email_verified_at NO es null) -->
+                      <button
+                        class="btn btn-success"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editarPerfilModal"
+                        [disabled]="!usuario.email_verified_at">
+                        <i class="ri-edit-box-line align-bottom"></i> Editar perfil
+                      </button>
+                    
+                      <!-- Nuevo botón que aparece SOLO si email_verified_at ES null -->
+                      <button
+                      class="btn btn-warning"
+                      *ngIf="!usuario.email_verified_at"
+                      (click)="accionParaEmailNoVerificado()">
+                      <i class="ri-error-warning-line align-bottom"></i> Verificar correo
+                    </button>
+                    
+                    
+                    </div>
+                    
                 </div>
                 <!-- Tab panes -->
                 <div class="tab-content pt-4 text-muted">
@@ -146,9 +162,9 @@
                                   
                                               <!-- Botón para ir al negocio -->
                                               <div class="d-flex justify-content-end mt-3">
-                                                <a routerLink="['/negocio', negocio.id]" class="btn btn-primary btn-sm">
+                                                <a [routerLink]="['/negocio', negocio.id]" class="btn btn-primary btn-sm">
                                                   Ver negocio
-                                                </a>
+                                                </a>                                                
                                               </div>
                                             </div><!-- end card-body -->
                                           </div><!-- end card -->
@@ -203,10 +219,26 @@
               <input type="text" id="name" [(ngModel)]="usuario.name" name="name" class="form-control" required />
             </div>
   
-            <div class="mb-3">
-              <label for="email" class="form-label">Correo electrónico</label>
-              <input type="email" id="email" [(ngModel)]="usuario.email" name="email" class="form-control" required />
+          <!-- Correo con ícono -->
+          <div class="mb-3">
+            <label for="email" class="form-label">Correo electrónico</label>
+            <div class="form-icon">
+              <input
+                type="email"
+                id="email"
+                [(ngModel)]="usuario.email"
+                name="email"
+                class="form-control form-control-icon"
+                placeholder="example@gmail.com"
+                [readonly]="usuario.email_verified_at !== null"
+                required
+              />
+              <i class="ri-mail-unread-line"></i>
             </div>
+            <small *ngIf="usuario.email_verified_at !== null" class="text-muted">Correo verificado, no editable.</small>
+          </div>
+            
+            
   
             <div class="mb-3">
               <label for="password" class="form-label">Nueva contraseña</label>
@@ -238,4 +270,43 @@
       </div>
     </div>
   </div>
-  
+
+
+<!-- Modal verificar código - controlado con *ngIf -->
+<div *ngIf="mostrarModalVerificarCodigo" class="modal fade show d-block" tabindex="-1" aria-labelledby="verificarCodigoModalLabel" aria-modal="true" role="dialog" style="background: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form (ngSubmit)="enviarCodigo()" #formCodigo="ngForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="verificarCodigoModalLabel">Ingresar código de verificación</h5>
+          <button type="button" class="btn-close" (click)="cerrarModalVerificarCodigo()" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="codigo" class="form-label">Código de 6 dígitos</label>
+            <input
+              type="text"
+              id="codigo"
+              name="codigo"
+              class="form-control text-center fs-4"
+              maxlength="6"
+              minlength="6"
+              pattern="\\d{6}"
+              required
+              [(ngModel)]="codigoVerificacion"
+              autocomplete="one-time-code"
+              inputmode="numeric"
+            />
+            <div *ngIf="formCodigo.submitted && formCodigo.controls['codigo']?.invalid
+            " class="text-danger small mt-1">
+              Ingresa un código válido de 6 dígitos.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary w-100" [disabled]="formCodigo.invalid">Enviar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

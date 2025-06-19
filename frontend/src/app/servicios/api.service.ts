@@ -158,7 +158,7 @@ export class ApiService {
       return this.http.put(`${this.apiUrl}/negocios/${id}`, negocio, {
         headers: this.getAuthHeaders()
       });
-    }
+    } 
     
     eliminarNegocio(id: number): Observable<any> {
       return this.http.delete(`${this.apiUrl}/negocios/${id}`, {
@@ -182,7 +182,115 @@ export class ApiService {
       return this.http.post(`${this.apiUrl}/usuarios/${id}/actualizar`, data, { headers });
     }
     
+    enviarCodigoVerificacion(id: string): Observable<any> {
+      return this.http.post(`${this.apiUrl}/enviar-codigo-verificacion/${id}`, {}, {
+        headers: this.getAuthHeaders()
+      });
+    }
     
     
- 
+
+    verificarCodigoEmail(id: number, codigo: string): Observable<any> {
+      return this.http.post(`${this.apiUrl}/verificar-codigo-email`, { id, codigo }, {
+        headers: this.getAuthHeaders()
+      });
+    }
+
+    obtenerDetalleNegocio(id: number): Observable<any> {
+      return this.http.get(`${this.apiUrl}/negocios/${id}`, {
+        headers: this.getAuthHeaders()
+      });
+    }
+
+    actualizarNegocioDetalle(id: number, data: FormData): Observable<any> {
+      const token = sessionStorage.getItem('token') || '';
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${token}`
+      });
+      return this.http.post(`${this.apiUrl}/negocios/${id}`, data, { headers });
+    }
+
+    actualizarContactoNegocio(id: number, data: any): Observable<any> {
+      return this.http.post(`${this.apiUrl}/negocios/${id}/actualizar-contacto`, data, {
+        headers: this.getAuthHeaders()
+      });
+    }
+
+    actualizarHorarios(negocioId: number, horarios: any[]): Observable<any> {
+      return this.http.put(`${this.apiUrl}/negocios/${negocioId}/horarios`, { horarios }, {
+        headers: this.getAuthHeaders()
+      });
+    }
+
+
+    postConToken(ruta: string, data: any): Observable<any> {
+      const token = sessionStorage.getItem('token') || '';
+      const isFormData = data instanceof FormData;
+    
+      let headers = new HttpHeaders({
+        'Authorization': `Bearer ${token}`
+      });
+    
+      if (!isFormData) {
+        headers = headers.set('Content-Type', 'application/json');
+      }
+    
+      return this.http.post(`${this.apiUrl}${ruta.startsWith('/') ? ruta : '/' + ruta}`, data, { headers });
+    }
+
+    eliminarPublicacion(id: number): Observable<any> {
+      const token = sessionStorage.getItem('token') || '';
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${token}`
+      });
+    
+      return this.http.delete(`${this.apiUrl}/publicaciones/${id}`, { headers });
+    }
+    
+
+    toggleDestacadoPublicacion(publicacionId: number): Observable<any> {
+      return this.http.put(`${this.apiUrl}/publicaciones/${publicacionId}/destacar`, {}, {
+        headers: this.getAuthHeaders()
+      });
+    }
+
+    actualizarOrdenDestacadas(orden: { id: number; orden: number }[]): Observable<any> {
+      return this.http.put(
+        `${this.apiUrl}/publicaciones/destacadas/orden`,
+        { orden },
+        { headers: this.getAuthHeaders() }
+      );
+    }
+
+
+    getPublicaciones(page: number, limit: number = 5): Observable<any> {
+      const token = sessionStorage.getItem('token');
+      const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    
+      return this.http.get<any>(`${this.apiUrl}/publicaciones?page=${page}&limit=${limit}`, { headers });
+    }
+
+    reportarPublicacion(reporte: { user_id: number; publicacion_id: number; comentario: string }): Observable<any> {
+      return this.http.post(
+        `${this.apiUrl}/reportes`,
+        reporte,
+        { headers: this.getAuthHeaders() }
+      );
+    }
+
+    reportesPublicaciones(page: number = 1, perPage: number = 10): Observable<any> {
+      return this.http.get(
+        `${this.apiUrl}/reportes-publicaciones?page=${page}&per_page=${perPage}`,
+        { headers: this.getAuthHeaders() }
+      );
+    }
+
+    marcarReporteComoVisto(id: number) {
+      const headers = this.getAuthHeaders();
+      return this.http.post(`${this.apiUrl}/reportes/${id}/marcar-visto`, {}, { headers });
+    }
+    
+    
+
+
 }

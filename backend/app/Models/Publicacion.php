@@ -9,12 +9,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Publicacion extends Model
 {
     use HasFactory;
+    protected $table = 'publicaciones';
 
     protected $fillable = [
         'negocio_id',
         'descripcion',
         'pdf',
+        'destacado',
+        'orden'
     ];
+    
 
     public function negocio(): BelongsTo
     {
@@ -30,5 +34,11 @@ class Publicacion extends Model
     {
         return $this->belongsToMany(Categoria::class, 'categoria_publicacion');
     }
+
+    public function reportes()
+    {
+        return $this->hasMany(ReportePublicacion::class, 'publicacion_id');
+    }
+
 
 }

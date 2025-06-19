@@ -45,9 +45,9 @@ class Negocio extends Model
         return $this->hasMany(NegocioCorreo::class);
     }
 
-    public function historias()
+    public function telefonos()
     {
-        return $this->hasMany(HistoriaNegocio::class);
+        return $this->hasMany(NegocioTelefono::class);
     }
 
     public function horarios()

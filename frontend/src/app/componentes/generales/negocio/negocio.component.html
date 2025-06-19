@@ -1,0 +1,688 @@
+<div class="container-fluid">
+    <div class="profile-foreground position-relative mx-n4 mt-n4">
+      <div class="profile-wid-bg">
+        <img src="../../../assets/img/image2.png" alt="" class="profile-wid-img" />
+      </div>
+    </div>
+  
+    <div class="pt-4 mb-4 mb-lg-3 pb-lg-4 profile-wrapper">
+      <div class="row g-4 align-items-center">
+        <div class="col-auto">
+          <div class="avatar-lg">
+            <img
+              *ngIf="negocio.logo_url; else inicialAvatar"
+              [src]="negocio.logo_url"
+              alt="logo"
+              class="img-thumbnail rounded-circle"
+              style="width: 64px; height: 64px;"
+            />
+            <ng-template #inicialAvatar>
+              <div
+                class="rounded-circle text-white d-flex align-items-center justify-content-center"
+                style="width: 64px; height: 64px; font-size: 24px; background-color: #0d6efd; border: 2px solid #0a58ca;"
+              >
+                {{ negocio.nombre?.charAt(0).toUpperCase() || '?' }}
+              </div>
+            </ng-template>
+          </div>
+        </div>
+  
+        <div class="col d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="text-white mb-3">{{ negocio.nombre }}</h3>
+        
+            <!-- Dueño -->
+            <p class="text-white text-opacity-75 mb-1">
+              <i class="fa-solid fa-user-tie me-1"></i> Dueño: {{ negocio.user?.name || 'Sin usuario' }}
+            </p>
+        
+            <!-- Descripción -->
+            <p class="text-white text-opacity-75 mb-1">
+              <i class="fa-solid fa-info-circle me-1"></i> {{ negocio.descripcion || 'Sin descripción' }}
+            </p>
+        
+            <!-- Dirección -->
+            <p class="text-white text-opacity-75 mb-1">
+              <i class="fa-solid fa-location-dot me-1"></i> {{ negocio.direccion || 'Sin dirección' }}
+            </p>
+        
+            <!-- Servicio a domicilio -->
+            <p class="text-white text-opacity-75">
+              <i class="fa-solid fa-truck me-1"></i>
+              {{ negocio.servicio_domicilio ? 'Ofrece servicio a domicilio' : 'No ofrece servicio a domicilio' }}
+            </p>
+          </div>
+        
+          <div>
+            <!-- Botón que abre el modal y carga los datos -->
+            <button *ngIf="mi_negocio" class="btn btn-outline-light btn-sm" (click)="abrirModalEditar(negocio.id)">
+              <i class="fa-solid fa-pen-to-square"></i> Editar negocio
+            </button>            
+          </div>
+        </div>
+        
+        
+      </div>
+    </div>
+  
+    <div class="row">
+      <div class="col-lg-12">
+        <div>
+          <div class="d-flex profile-wrapper">
+            <ul class="nav nav-pills animation-nav profile-nav gap-2 gap-lg-3 flex-grow-1" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link fs-14 active" data-bs-toggle="tab" href="#overview-tab" role="tab">
+                  <i class="ri-airplay-fill d-inline-block d-md-none"></i>
+                  <span class="d-none d-md-inline-block">Vista general</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+  
+          <div class="tab-content pt-4 text-muted">
+            <div class="tab-pane active" id="overview-tab" role="tabpanel">
+              <div class="row">
+                <div class="col-xxl-3">
+                  <!-- Información de contacto -->
+                  <div class="card">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                      <h5 class="card-title mb-0">Información de contacto</h5>
+                      <button *ngIf="mi_negocio" class="btn btn-link text-dark p-0" (click)="abrirModalContacto()" title="Editar contacto">
+                        <i class="fa-solid fa-ellipsis-vertical fs-5"></i>
+                      </button>                                           
+                    </div>
+                    <div class="card-body pt-0">
+                      <div class="table-responsive">
+                        <table class="table table-borderless mb-0">
+                          <tbody>
+                            <tr>
+                              <th class="ps-0" scope="row">Correos:</th>
+                              <td class="text-muted">
+                                <ul class="list-unstyled mb-0">
+                                  <li *ngFor="let correo of negocio.correos" class="d-flex align-items-center">
+                                    <i class="fa-solid fa-envelope me-2"></i>
+                                    {{ correo.correo }}
+                                  </li>
+                                </ul>
+                              </td>
+                            </tr>
+                            <tr>
+                              <th class="ps-0" scope="row">Teléfonos:</th>
+                              <td class="text-muted">
+                                <ul class="list-unstyled mb-0">
+                                  <li *ngFor="let tel of negocio.telefonos">
+                                    <i class="fa-solid fa-phone me-2"></i>{{ tel.telefono }}
+                                  </li>
+                                </ul>
+                              </td>
+                            </tr>
+                            <tr>
+                              <th class="ps-0" scope="row">Redes Sociales:</th>
+                              <td class="text-muted">
+                                <ul class="list-unstyled mb-0">
+                                  <li *ngFor="let red of negocio.redes_sociales" class="d-flex align-items-center gap-2 mb-2">
+                                    <a
+                                      [href]="getRedSocialUrl(red)"
+                                      target="_blank"
+                                      rel="noopener"
+                                      class="text-decoration-none d-flex align-items-center"
+                                    >
+                                      <i
+                                        class="fs-4"
+                                        [ngClass]="{
+                                          'fa-brands fa-facebook': red.tipo.toLowerCase() === 'facebook',
+                                          'fab fa-instagram text-danger': red.tipo.toLowerCase() === 'instagram',
+                                          'fab fa-tiktok text-dark': red.tipo.toLowerCase() === 'tiktok',
+                                          'fab fa-whatsapp text-success': red.tipo.toLowerCase() === 'whatsapp'
+                                        }"
+                                        aria-hidden="true"
+                                      ></i>
+                                      <span class="ms-2 text-capitalize">{{ red.tipo }}</span>
+                                    </a>
+                                  </li>
+                                </ul>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+  
+                  <!-- Horarios de atención -->
+                  <div class="card mt-4">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                      <h5 class="card-title mb-0">Horarios de atención</h5>
+                      <button *ngIf="mi_negocio" class="btn btn-link text-dark p-0" title="Editar horarios" (click)="abrirModalHorarios()">
+                        <i class="fa-solid fa-ellipsis-vertical fs-5"></i>
+                      </button>                      
+                    </div>
+                    <div class="card-body pt-0">
+                      <div class="table-responsive" style="overflow-x: auto; white-space: nowrap;">
+                        <table class="table table-borderless mb-0">
+                          <tbody>
+                            <tr *ngFor="let dia of diasSemana">
+                              <th class="ps-0 align-top" scope="row" style="min-width: 150px;">
+                                <i class="fa-solid fa-calendar-days me-2 text-primary"></i>{{ dia.nombre }}
+                              </th>
+                              <td class="text-muted" style="min-width: 300px;">
+                                <ng-container *ngIf="getHorariosDia(dia.index).length > 0; else cerrado">
+                                  <ul class="list-unstyled mb-0">
+                                    <li *ngFor="let horario of getHorariosDia(dia.index)">
+                                      <i class="fa-regular fa-clock me-2"></i>
+                                      {{ horario.hora_apertura }} - {{ horario.hora_cierre }}
+                                    </li>
+                                  </ul>
+                                </ng-container>
+                                <ng-template #cerrado>
+                                  <span class="text-danger">Cerrado</span>
+                                </ng-template>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+  
+                <div class="col-xxl-9">
+                  <!-- Publicaciones destacadas -->
+                  <div class="card mb-4">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                      <h5 class="card-title mb-0">Publicaciones destacadas</h5>
+                      <button
+                        class="btn btn-outline-primary btn-sm"
+                        title="Ordenar publicaciones destacadas"
+                        (click)="abrirModalDestacadas()"
+                      >
+                        <i class="fa-solid fa-arrows-up-down-left-right me-1"></i> Ordenar
+                      </button>
+                    </div>
+                    
+
+<div class="card-body pt-0">
+  <div class="d-flex overflow-auto gap-3 pb-2">
+    <ng-container *ngFor="let pub of publicacionesDestacadas">
+      <div
+        class="story-rect position-relative cursor-pointer"
+        [style.background-image]="'url(' + (pub.imagenes?.[0]?.imagen || '') + ')'"
+        title="{{ pub.descripcion }}"
+        (click)="abrirModalPublicacion(pub)"
+        data-bs-toggle="modal"
+        data-bs-target="#modalPublicacionDestacada"
+      >
+        <div class="overlay"></div>
+        <span class="story-title">#{{ pub.orden ?? '-' }}</span>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+                  </div>
+
+
+                  
+  
+                  <!-- Título Publicaciones con botón al lado derecho -->
+                  <div class="container mx-auto my-8 bg-white p-4 rounded shadow flex items-center justify-between">
+                    <h3 class="text-3xl font-semibold text-gray-800 text-center w-full">Publicaciones</h3>
+
+                    <!-- Botón estilo Configuración -->
+                    <button *ngIf="mi_negocio"
+                      class="btn btn-outline-primary btn-sm ml-auto"
+                      title="Agregar nueva publicación"
+                      (click)="abrirModal()"
+                    >
+                      <i class="fa-solid fa-plus me-1"></i> Nueva publicación
+                    </button>
+                  </div>
+
+
+  
+                  <!-- Contenedor de publicaciones -->
+<!-- Contenedor de publicaciones -->
+<div class="container mx-auto max-h-[500px] overflow-y-auto px-4">
+  <ng-container *ngIf="negocio.publicaciones.length > 0; else sinPublicaciones">
+    <div *ngFor="let pub of negocio.publicaciones" class="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200 hover:shadow-lg transition-shadow">
+      
+      <!-- Header: logo, nombre, fecha y configuración -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-4">
+          <img [src]="negocio.logo_url" alt="Logo" class="w-14 h-14 rounded-full object-cover" />
+          <div>
+            <h5 class="text-xl font-semibold text-gray-900">{{ negocio.nombre }}</h5>
+            <span class="text-sm text-gray-500">Publicado el {{ pub.created_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="mi_negocio" class="dropdown">
+          <button class="btn btn-link text-gray-600 hover:text-gray-800 p-0" id="menuOpciones" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa-solid fa-sliders fs-5"></i>
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="menuOpciones">
+            <li>
+              <button class="dropdown-item" (click)="confirmarToggleDestacado(pub)">
+                {{ pub.destacado ? 'Quitar destacado' : 'Destacar' }}
+              </button>
+            </li>
+            <li>
+              <button class="dropdown-item" type="button" (click)="abrirModal(pub)">Editar</button>
+            </li>
+            <li>
+              <button class="dropdown-item text-danger" type="button" (click)="confirmarEliminarPublicacion(pub)">
+                Eliminar
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <hr class="mb-4 border-gray-300" />
+
+      <!-- Descripción -->
+      <p class="text-gray-700 mb-4 whitespace-pre-line">{{ pub.descripcion }}</p>
+
+      <!-- PDF botón -->
+      <div *ngIf="pub.pdf" class="mb-4">
+        <a [href]="pub.pdf" target="_blank" class="inline-block bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700 transition">
+          Ver PDF
+        </a>
+      </div>
+
+      <!-- Imágenes -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <a *ngFor="let img of pub.imagenes" href="#" class="group relative flex h-32 md:h-40 overflow-hidden rounded-lg bg-gray-100 shadow-md">
+          <img
+            [src]="img.imagen"
+            alt="Imagen publicación"
+            loading="lazy"
+            class="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
+          />
+        </a>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #sinPublicaciones>
+    <p class="text-center text-gray-500 text-lg">No hay publicaciones disponibles.</p>
+  </ng-template>
+</div>
+
+                </div>
+                <!--end col-->
+              </div>
+              <!--end row-->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+  <!-- Modal Editar Negocio -->
+<div class="modal fade" id="negocioModal" tabindex="-1" aria-labelledby="negocioModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form (ngSubmit)="guardarNegocio()" #negocioForm="ngForm" autocomplete="off" novalidate>
+        <div class="modal-header bg-light">
+          <h5 class="modal-title" id="negocioModalLabel">Editar Negocio</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-3">
+
+            <div class="col-12">
+              <label class="form-label">Nombre</label>
+              <input type="text" class="form-control" [(ngModel)]="nuevoNegocio.nombre" name="nombre" required>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Descripción</label>
+              <textarea class="form-control" [(ngModel)]="nuevoNegocio.descripcion" name="descripcion" rows="3"></textarea>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Dirección</label>
+              <input type="text" class="form-control" [(ngModel)]="nuevoNegocio.direccion" name="direccion">
+            </div>
+
+        <!-- Campo Servicio a Domicilio -->
+        <div class="col-md-6">
+          <label class="form-label">Servicio a domicilio</label>
+          <select
+            class="form-select"
+            [(ngModel)]="nuevoNegocio.servicio_domicilio"
+            name="servicio_domicilio"
+          >
+            <option [ngValue]="1">Sí</option>
+            <option [ngValue]="0">No</option>
+          </select>
+        </div>
+
+        <!-- Campo de Foto con diseño personalizado -->
+        <div class="col-md-6">
+          <label class="form-label">Foto de perfil</label>
+          <input
+            type="file"
+            id="logo" name="logo" 
+            (change)="onFileSelected($event)"
+            class="form-control"
+            accept="image/*"
+          />
+        </div>
+
+
+
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="limpiarFormulario()">Cancelar</button>
+          <button type="submit" class="btn btn-success" [disabled]="negocioForm.invalid">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- Modal Editar información de contacto -->
+
+
+<div class="modal fade" id="modalContacto" tabindex="-1" aria-labelledby="modalContactoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalContactoLabel">Editar información de contacto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Correos -->
+        <div class="mb-3">
+          <label>Correos:</label>
+          <div *ngFor="let correo of nuevoContacto.correos; let i = index" class="d-flex gap-2 mb-2 align-items-center">
+            <div class="form-icon flex-grow-1">
+              <input [(ngModel)]="correo.correo" type="email" class="form-control form-control-icon" placeholder="ejemplo@gmail.com">
+              <i class="ri-mail-unread-line"></i>
+            </div>
+            <button class="btn btn-danger btn-sm" (click)="eliminarCorreo(i)">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+          <button class="btn btn-sm btn-secondary" (click)="agregarCorreo()">+ Añadir correo</button>
+        </div>
+
+
+        <!-- Teléfonos -->
+        <div class="mb-3">
+          <label>Teléfonos:</label>
+          <div *ngFor="let tel of nuevoContacto.telefonos; let i = index" class="d-flex gap-2 mb-2">
+            <input [(ngModel)]="tel.telefono" class="form-control" placeholder="Teléfono">
+            <button class="btn btn-danger btn-sm" (click)="eliminarTelefono(i)">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+          <button class="btn btn-sm btn-secondary" (click)="agregarTelefono()">+ Añadir teléfono</button>
+        </div>
+
+        <!-- Redes Sociales -->
+        <div class="mb-3">
+          <label>Redes Sociales:</label>
+          <div *ngFor="let red of nuevoContacto.redes_sociales; let i = index" class="d-flex gap-2 mb-2">
+            <select [(ngModel)]="red.tipo" class="form-select w-auto">
+              <option value="facebook">Facebook</option>
+              <option value="intagram">Instagram</option>
+              <option value="tiktok">TikTok</option>
+              <option value="whatsapp">WhatsApp</option>
+            </select>
+            <input [(ngModel)]="red.url" class="form-control" placeholder="URL o número">
+            <button class="btn btn-danger btn-sm" (click)="eliminarRed(i)">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+          <button class="btn btn-sm btn-secondary" (click)="agregarRed()">+ Añadir red social</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-success" (click)="guardarContacto()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- Modal Editar Horario -->
+
+  <div class="modal fade" id="modalHorarios" tabindex="-1" aria-labelledby="modalHorariosLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar horarios de atención</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div *ngFor="let dia of diasSemana" class="mb-4">
+              <h6>{{ dia.nombre }}</h6>
+  
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="estadoCerrado[dia.index]" [name]="'cerrado' + dia.index" />
+                <label class="form-check-label">Cerrado</label>
+              </div>
+  
+              <div *ngIf="!estadoCerrado[dia.index]">
+                <div *ngFor="let horario of horariosEdit[dia.index]; let j = index" class="row align-items-center mb-2">
+                  <div class="col">
+                    <input type="time" class="form-control" [(ngModel)]="horario.hora_apertura" [name]="'apertura' + dia.index + '_' + j" />
+                  </div>
+                  <div class="col">
+                    <input type="time" class="form-control" [(ngModel)]="horario.hora_cierre" [name]="'cierre' + dia.index + '_' + j" />
+                  </div>
+                  <div class="col-auto">
+                    <button class="btn btn-danger btn-sm" (click)="eliminarHorario(dia.index, j)" type="button">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+  
+                <button class="btn btn-outline-primary btn-sm" (click)="agregarHorario(dia.index)" type="button">
+                  <i class="fa fa-plus me-1"></i> Agregar horario
+                </button>
+              </div>
+  
+              <hr />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary" (click)="guardarHorarios()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+<!-- Modal Editar y Agregar publicación -->
+<div class="modal fade" id="modalPublicacion" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content p-4">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ publicacion?.id ? 'Editar' : 'Nueva' }} publicación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body space-y-4">
+        
+        <!-- Descripción -->
+        <div>
+          <label for="descripcion" class="form-label fw-bold">Descripción</label>
+          <textarea
+            id="descripcion"
+            [(ngModel)]="publicacion.descripcion"
+            class="form-control"
+            rows="4"
+            placeholder="Describe esta publicación..."
+          ></textarea>
+        </div>
+
+        <!-- Subir PDF -->
+        <div>
+          <label for="pdf" class="form-label fw-bold">Archivo PDF (opcional)</label>
+          <input
+            id="pdf"
+            type="file"
+            (change)="onPdfChange($event)"
+            accept="application/pdf"
+            class="form-control"
+          />
+        </div>
+
+        <!-- Subir imágenes -->
+        <div>
+          <label for="imagenes" class="form-label fw-bold">Imágenes</label>
+          <input
+            id="imagenes"
+            type="file"
+            (change)="onImagenesChange($event)"
+            accept="image/*"
+            multiple
+            class="form-control"
+          />
+        </div>
+
+        <!-- Vista previa de imágenes -->
+        <div *ngIf="previewImagenes.length > 0" class="grid grid-cols-3 gap-2 mt-2">
+          <div *ngFor="let img of previewImagenes; let i = index" class="relative">
+            <img [src]="img" class="rounded shadow h-24 object-cover w-full" />
+            <button
+              type="button"
+              class="absolute top-0 right-0 bg-red-600 text-white rounded-full text-xs px-1"
+              (click)="eliminarImagen(i)"
+              title="Eliminar imagen"
+            >✕</button>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardarPublicacion()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal publicación destacada -->
+<div class="modal fade" id="modalPublicacionDestacada" tabindex="-1" aria-labelledby="modalPublicacionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalPublicacionLabel">Publicación destacada</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" *ngIf="publicacionSeleccionada">
+        <!-- Descripción -->
+        <p class="text-gray-800 whitespace-pre-line mb-3">{{ publicacionSeleccionada.descripcion }}</p>
+
+        <!-- PDF -->
+        <div *ngIf="publicacionSeleccionada.pdf" class="mb-3">
+          <a [href]="publicacionSeleccionada.pdf" target="_blank" class="btn btn-outline-primary btn-sm">
+            Ver PDF
+          </a>
+        </div>
+
+        <!-- Imágenes -->
+        <div class="row">
+          <div
+            class="col-6 col-md-4 mb-3"
+            *ngFor="let img of publicacionSeleccionada.imagenes"
+          >
+            <img [src]="img.imagen" class="img-fluid rounded shadow-sm" alt="Imagen de publicación" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal para ordenar publicaciones destacadas -->
+<div class="modal fade" id="modalDestacadas" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content p-4">
+      <div class="modal-header">
+        <h5 class="modal-title">Ordenar publicaciones destacadas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+
+        <div
+          cdkDropList
+          [cdkDropListData]="publicacionesDestacadas"
+          (cdkDropListDropped)="dropDestacadas($event)"
+          class="list-group"
+          style="max-height: 400px; overflow-y: auto;"
+        >
+          <div
+            *ngFor="let pub of publicacionesDestacadas"
+            cdkDrag
+            class="list-group-item d-flex align-items-center gap-3"
+            style="cursor: grab;"
+          >
+            <!-- Número de orden -->
+            <span class="fw-bold text-primary" style="width: 32px;">#{{ pub.orden ?? '-' }}</span>
+
+            <!-- Icono mover -->
+            <i class="fa-solid fa-arrows-up-down-left-right text-muted"></i>
+
+            <!-- Imagen o placeholder -->
+            <ng-container *ngIf="pub.imagenes?.length > 0; else placeholder">
+              <img
+                [src]="pub.imagenes[0].imagen"
+                alt="Foto publicación"
+                style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;"
+              />
+            </ng-container>
+            <ng-template #placeholder>
+              <div
+                style="width: 60px; height: 60px; background: #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #555;"
+              >
+                Sin foto
+              </div>
+            </ng-template>
+
+            <!-- Detalles -->
+            <div style="flex-grow: 1;">
+              <div
+                style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;"
+                [title]="pub.descripcion"
+              >
+                {{ pub.descripcion || 'Sin descripción' }}
+              </div>
+              <small class="text-muted">
+                {{ pub.imagenes?.length || 0 }} foto{{ pub.imagenes?.length === 1 ? '' : 's' }}
+              </small>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardarOrdenDestacadas()">Guardar orden</button>
+      </div>
+    </div>
+  </div>
+</div>

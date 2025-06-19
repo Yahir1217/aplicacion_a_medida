@@ -54,8 +54,30 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/negocios/{id}', [NegocioController::class, 'update']);
     Route::delete('/negocios/{id}', [NegocioController::class, 'destroy']);
 
+    //Rutas la vista del negocio
+    Route::get('/negocios/{id}', [NegocioController::class, 'verDetalle']);
+    Route::post('/negocios/{id}', [NegocioController::class, 'actualizar']);
+    Route::post('/negocios/{id}/actualizar-contacto', [NegocioController::class, 'actualizarContacto']);
+    Route::put('/negocios/{id}/horarios', [NegocioController::class, 'actualizarHorarios']);
+    Route::post('/publicaciones', [NegocioController::class, 'storePublicacion']);
+    Route::delete('/publicaciones/{id}', [NegocioController::class, 'eliminarPublicacion']);
+    Route::put('/publicaciones/{id}/destacar', [NegocioController::class, 'toggleDestacado']);
+    Route::put('/publicaciones/destacadas/orden', [NegocioController::class, 'actualizarOrdenDestacadas']);
+
+
     Route::get('/usuario/perfil/{id}', [UsuarioController::class, 'obtenerPerfil']);
     Route::post('/usuarios/{id}/actualizar', [UsuarioController::class, 'actualizar']);
+    Route::post('/enviar-codigo-verificacion/{id}', [UsuarioController::class, 'enviarCodigoVerificacion']);
+    Route::post('/verificar-codigo-email', [UsuarioController::class, 'verificarCodigoEmail']);
+
+    ///GENERALES
+    Route::get('/publicaciones', [NegocioController::class, 'PublicacionesGenerales']);
+    Route::post('/reportes', [NegocioController::class, 'SubirReporte']);
+
+    ///ADMINISTRADOR
+    Route::get('/reportes-publicaciones', [NegocioController::class, 'VerReportes']);
+    Route::post('/reportes/{id}/marcar-visto', [NegocioController::class, 'marcarVisto']);
+
 
 
 });

@@ -1,6 +1,6 @@
 // usuarios.component.ts
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from '../../servicios/api.service';
+import { ApiService } from '../../../servicios/api.service';
 import Swal from 'sweetalert2';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';

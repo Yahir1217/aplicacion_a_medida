@@ -13,38 +13,51 @@ export const routes: Routes = [
     path: 'inicio',
     canActivate: [AuthGuard],
     loadComponent: () =>
-      import('./componentes/vista-principal/vista-principal.component').then(m => m.VistaPrincipalComponent),
+      import('./componentes/generales/vista-principal/vista-principal.component').then(m => m.VistaPrincipalComponent),
   },
   {
     path: 'roles',
     canActivate: [AuthGuard],  // <- agrega el guard aquí
     loadComponent: () =>
-      import('./componentes/roles/roles.component').then(m => m.RolesComponent),
+      import('./componentes/administrador/roles/roles.component').then(m => m.RolesComponent),
   },
   {
     path: 'usuarios',
     canActivate: [AuthGuard], // <- y aquí también
     loadComponent: () =>
-      import('./componentes/usuarios/usuarios.component').then(m => m.UsuariosComponent),
+      import('./componentes/administrador/usuarios/usuarios.component').then(m => m.UsuariosComponent),
   },
   {
     path: 'categorias',
     canActivate: [AuthGuard], // <- y aquí también
     loadComponent: () =>
-      import('./componentes/categorias/categorias.component').then(m => m.CategoriasComponent),
+      import('./componentes/administrador/categorias/categorias.component').then(m => m.CategoriasComponent),
   },
   {
     path: 'negocios',
     canActivate: [AuthGuard], // <- y aquí también
     loadComponent: () =>
-      import('./componentes/negocios/negocios.component').then(m => m.NegociosComponent),
+      import('./componentes/administrador/negocios/negocios.component').then(m => m.NegociosComponent),
   },
   {
     path: 'perfil',
     canActivate: [AuthGuard], // <- y aquí también
     loadComponent: () =>
-      import('./componentes/perfil/perfil.component').then(m => m.PerfilComponent),
+      import('./componentes/generales/perfil/perfil.component').then(m => m.PerfilComponent),
   },
+  {
+    path: 'negocio/:id',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./componentes/generales/negocio/negocio.component').then(m => m.NegocioComponent),
+  },
+  {
+    path: 'reportes',
+    canActivate: [AuthGuard], // <- y aquí también
+    loadComponent: () =>
+      import('./componentes/administrador/publicaciones-reportadas/publicaciones-reportadas.component').then(m => m.PublicacionesReportadasComponent),
+  }
+  
   
 ];
 

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
-import { ApiService } from '../../servicios/api.service';
+import { ApiService } from '../../../servicios/api.service';
 
 interface Negocio {
   nombre: string;
@@ -11,7 +11,7 @@ interface Negocio {
   estado: string;
   servicio_domicilio: boolean;
   logo_url: string;
-  fecha_pago: string | null;
+  fecha_pago: string | null; 
   fecha_vencimiento: string | null;
   user_id: number | null;
 }

@@ -1,0 +1,315 @@
+<div class="row">
+    <!-- Columna principal -->
+    <div class="col-xxl-9">
+      <div class="card">
+        <div class="card-header">
+          <div class="row g-3 align-items-center">
+            <div class="col-md-6">
+              <div class="search-box">
+                <input [(ngModel)]="filter" (ngModelChange)="actualizarFiltro()" type="text" class="form-control" placeholder="Buscar reporte...">
+                <i class="ri-search-line search-icon"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <div class="card-body">
+          <div class="table-responsive table-card mb-3">
+            <table class="table align-middle table-nowrap mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 40px;">#</th>
+                  <th style="min-width: 180px;">Reportado por</th>
+                  <th style="min-width: 120px;">Comentario</th>
+                  <th style="min-width: 180px;">Negocio</th>
+                  <th style="min-width: 180px;">Dueño negocio</th>
+                  <th style="min-width: 150px;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rep of reportesFiltrados">
+                  <td>{{ rep.id }}</td>
+  
+                  <!-- Usuario que reportó -->
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <ng-container *ngIf="rep.usuario.foto_perfil; else letraUsuario">
+                        <img [src]="rep.usuario.foto_perfil" class="rounded-circle me-2" width="32" height="32" alt="Foto">
+                      </ng-container>
+                      <ng-template #letraUsuario>
+                        <div class="rounded-circle bg-light text-muted text-uppercase d-flex justify-content-center align-items-center me-2" style="width:32px; height:32px;">
+                          {{ rep.usuario.name[0] }}
+                        </div>
+                      </ng-template>
+                      <span>{{ rep.usuario.name }}</span>
+                    </div>
+                  </td>
+  
+                  <!-- Botón Ver reporte -->
+                  <td>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="verDetalle(rep, 'comentario')">
+                      Ver reporte
+                    </button>
+                  </td>
+  
+                  <!-- Negocio -->
+                  <td>
+                    <a href="javascript:void(0);" (click)="verDetalle(rep.publicacion.negocio, 'negocio')" class="text-decoration-none d-flex align-items-center">
+                      <ng-container *ngIf="rep.publicacion.negocio.logo_url; else letraNegocio">
+                        <img [src]="rep.publicacion.negocio.logo_url" class="rounded-circle me-2" width="32" height="32" alt="Logo">
+                      </ng-container>
+                      <ng-template #letraNegocio>
+                        <div class="rounded-circle bg-light text-muted text-uppercase d-flex justify-content-center align-items-center me-2" style="width:32px; height:32px;">
+                          {{ rep.publicacion.negocio.nombre[0] }}
+                        </div>
+                      </ng-template>
+                      {{ rep.publicacion.negocio.nombre }}
+                    </a>
+                  </td>
+  
+                  <!-- Dueño del negocio -->
+                  <td>
+                    <a href="javascript:void(0);" (click)="verDetalle(rep.publicacion.negocio.user, 'usuario')" class="text-decoration-none d-flex align-items-center">
+                      <ng-container *ngIf="rep.publicacion.negocio.user.foto_perfil; else letraDueno">
+                        <img [src]="rep.publicacion.negocio.user.foto_perfil" class="rounded-circle me-2" width="32" height="32" alt="Foto">
+                      </ng-container>
+                      <ng-template #letraDueno>
+                        <div class="rounded-circle bg-light text-muted text-uppercase d-flex justify-content-center align-items-center me-2" style="width:32px; height:32px;">
+                          {{ rep.publicacion.negocio.user.name[0] }}
+                        </div>
+                      </ng-template>
+                      {{ rep.publicacion.negocio.user.name }}
+                    </a>
+                  </td>
+  
+                  <!-- Acciones -->
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <!-- Botón Ver publicación -->
+                      <button class="btn btn-sm btn-outline-primary"
+                              (click)="verDetalle(rep.publicacion, 'publicacion')"
+                              title="Ver publicación">
+                        <i class="fa-solid fa-file-lines"></i>
+                      </button>
+                  
+                      <!-- Botón Marcar como visto / Etiqueta -->
+                      <button *ngIf="!rep.visto"
+                              class="btn btn-sm btn-outline-success"
+                              (click)="marcarComoVisto(rep.id)"
+                              title="Marcar como visto">
+                        <i class="fa-solid fa-check"></i>
+                      </button>
+                  
+                      <span *ngIf="rep.visto" class="badge bg-success" title="Ya visto">
+                        <i class="fa-solid fa-eye"></i>
+                      </span>
+                    </div>
+                  </td>
+  
+                </tr>
+              </tbody>
+            </table>
+          </div>
+  
+          <!-- Paginación -->
+          <div class="d-flex justify-content-end mt-3">
+            <div class="pagination-wrap hstack gap-2">
+              <a class="page-item pagination-prev" [class.disabled]="!reportes?.prev_page_url" (click)="cargarPage(reportes.current_page - 1)">
+                Anterior
+              </a>
+              <ul class="pagination listjs-pagination mb-0">
+                <li class="page-item disabled">
+                  <span class="page-link">{{ reportes.current_page }} / {{ reportes.last_page }}</span>
+                </li>
+              </ul>
+              <a class="page-item pagination-next" [class.disabled]="!reportes?.next_page_url" (click)="cargarPage(reportes.current_page + 1)">
+                Siguiente
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Panel lateral de detalle -->
+    <div class="col-xxl-3">
+      <div class="card" *ngIf="detalle">
+  
+        <!-- Usuario -->
+        <div class="card-body text-center" *ngIf="tipoDetalle === 'usuario'">
+          <ng-container *ngIf="detalle.foto_perfil; else letraUser">
+            <img [src]="detalle.foto_perfil" class="avatar-lg rounded-circle img-thumbnail mb-3" alt="Foto usuario">
+          </ng-container>
+          <ng-template #letraUser>
+            <div class="avatar-lg rounded-circle bg-light text-muted d-flex justify-content-center align-items-center mx-auto mb-3"
+                 style="width: 96px; height: 96px; font-size: 24px;">
+              {{ detalle.name[0] }}
+            </div>
+          </ng-template>
+          <h5>{{ detalle.name }}</h5>
+          <p class="text-muted">
+            <i class="fa-solid fa-envelope me-2"></i>{{ detalle.email }}
+          </p>
+        </div>
+  
+        <!-- Negocio -->
+        <div class="card-body text-center" *ngIf="tipoDetalle === 'negocio'">
+          <ng-container *ngIf="detalle.logo_url; else letraNeg">
+            <img [src]="detalle.logo_url" class="avatar-lg rounded-circle img-thumbnail mb-3" alt="Logo negocio">
+          </ng-container>
+          <ng-template #letraNeg>
+            <div class="avatar-lg rounded-circle bg-light text-muted d-flex justify-content-center align-items-center mx-auto mb-3"
+                 style="width: 96px; height: 96px; font-size: 24px;">
+              {{ detalle.nombre[0] }}
+            </div>
+          </ng-template>
+          <h5>{{ detalle.nombre }}</h5>
+          <p class="text-muted mb-1">
+            <strong>Dueño:</strong> {{ detalle.user.name }}
+          </p>
+          <p class="text-muted">
+            <strong>Descripción:</strong> {{ detalle.descripcion || 'Sin descripción' }}
+          </p>
+  
+          <!-- Contacto del negocio -->
+          <div class="card mt-3 text-start">
+            <div class="card-body p-2" style="max-height: 250px; overflow-y: auto;">
+              <h5 class="card-title mb-3">Contacto del negocio</h5>
+              <table class="table table-borderless mb-0">
+                <tbody>
+                  <!-- Correos -->
+                  <tr *ngFor="let correo of detalle.correos">
+                    <th class="ps-0" style="width: 110px;">
+                      <i class="fa-solid fa-envelope me-2"></i>Correo:
+                    </th>
+                    <td class="text-muted">{{ correo.correo }}</td>
+                  </tr>
+  
+                  <!-- Teléfonos -->
+                  <tr *ngFor="let tel of detalle.telefonos">
+                    <th class="ps-0" style="width: 110px;">
+                      <i class="fa-solid fa-phone me-2"></i>Teléfono:
+                    </th>
+                    <td class="text-muted">{{ tel.telefono }}</td>
+                  </tr>
+  
+                  <!-- Redes Sociales -->
+                  <tr *ngFor="let red of detalle.redes_sociales">
+                    <th class="ps-0" style="width: 110px;" class="d-flex align-items-center">
+                      <i
+                        class="fs-5 me-2"
+                        [ngClass]="{
+                          'fa-brands fa-facebook text-primary': red.tipo.toLowerCase() === 'facebook',
+                          'fa-brands fa-instagram text-danger': red.tipo.toLowerCase() === 'instagram',
+                          'fa-brands fa-tiktok text-dark': red.tipo.toLowerCase() === 'tiktok',
+                          'fa-brands fa-whatsapp text-success': red.tipo.toLowerCase() === 'whatsapp'
+                        }"
+                      ></i>
+                      {{ red.tipo }}:
+                    </th>
+                    <td class="text-muted">
+                      <a
+                        [href]="getRedSocialUrl(red)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-decoration-none"
+                      >
+                        {{ red.url }}
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Publicación -->
+<!-- Publicación -->
+<div class="card-body text-center" *ngIf="tipoDetalle === 'publicacion'">
+    <h5 class="mb-2">Publicación</h5>
+    <p class="text-muted">{{ detalle.descripcion }}</p>
+  
+    <div *ngIf="detalle.pdf">
+      <a [href]="detalle.pdf" target="_blank" class="btn btn-sm btn-outline-secondary">Ver PDF</a>
+    </div>
+  
+    <!-- Galería de imágenes -->
+    <div class="flex flex-wrap justify-center gap-2 mt-3" *ngIf="detalle.imagenes?.length > 0">
+      <img
+        *ngFor="let img of detalle.imagenes; let i = index"
+        [src]="img.imagen"
+        alt="Imagen publicación"
+        class="rounded border border-gray-300 cursor-pointer"
+        style="width: 70px; height: 70px; object-fit: cover;"
+        (click)="abrirModal(i)"
+      />
+    </div>
+  </div>
+  
+  
+        <!-- Comentario del reporte -->
+        <div class="card-body" *ngIf="tipoDetalle === 'comentario'">
+          <h5 class="text-center">Comentario del reporte</h5>
+          <p class="text-muted mt-3 text-center">“{{ detalle.comentario }}”</p>
+        </div>
+  
+      </div>
+    </div>
+
+
+
+  </div>
+
+
+
+
+      <!-- Modal Galería de Imágenes -->
+<!-- Modal para mostrar imagen en grande -->
+<div
+*ngIf="modalAbierto"
+class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-6"
+>
+<div class="bg-white rounded-lg shadow-lg max-w-3xl w-full max-h-[80vh] flex flex-col">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center p-4 border-b border-gray-300">
+    <h5 class="text-lg font-semibold">Imagen publicación</h5>
+    <button
+      (click)="cerrarModal()"
+      class="text-gray-600 hover:text-gray-900 text-3xl font-bold leading-none"
+      aria-label="Cerrar modal"
+    >
+      &times;
+    </button>
+  </div>
+
+  <!-- Body (imagen grande) -->
+  <div class="flex-grow overflow-auto p-6 flex justify-center items-center">
+    <img
+      [src]="imagenesModal[imagenActual]"
+      alt="Imagen grande"
+      class="rounded border border-gray-300 max-h-[60vh] max-w-[80vw] object-contain"
+    />
+  </div>
+
+  <!-- Footer con controles -->
+  <div class="flex justify-between items-center p-4 border-t border-gray-300">
+    <button
+      (click)="anterior()"
+      [disabled]="imagenActual === 0"
+      class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Anterior
+    </button>
+    <button
+      (click)="siguiente()"
+      [disabled]="imagenActual === imagenesModal.length - 1"
+      class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Siguiente
+    </button>
+  </div>
+</div>
+</div>
+  
