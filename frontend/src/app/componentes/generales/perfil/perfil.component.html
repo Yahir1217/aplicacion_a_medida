@@ -285,18 +285,19 @@
           <div class="mb-3">
             <label for="codigo" class="form-label">Código de 6 dígitos</label>
             <input
-              type="text"
-              id="codigo"
-              name="codigo"
-              class="form-control text-center fs-4"
-              maxlength="6"
-              minlength="6"
-              pattern="\\d{6}"
-              required
-              [(ngModel)]="codigoVerificacion"
-              autocomplete="one-time-code"
-              inputmode="numeric"
-            />
+            type="text"
+            id="codigo"
+            name="codigo"
+            class="form-control text-center fs-4"
+            required
+            minlength="6"
+            maxlength="6"
+            pattern="[A-Za-z0-9]{6}"
+            [(ngModel)]="codigoVerificacion"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+          />
+          
             <div *ngIf="formCodigo.submitted && formCodigo.controls['codigo']?.invalid
             " class="text-danger small mt-1">
               Ingresa un código válido de 6 dígitos.

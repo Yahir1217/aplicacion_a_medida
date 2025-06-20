@@ -162,7 +162,13 @@ export class PerfilComponent implements OnInit {
   
     this.apiService.enviarCodigoVerificacion(id).subscribe({
       next: (res) => {
-
+        Swal.fire({
+          icon: 'success',
+          title: 'Código enviado',
+          text: 'Revisa tu correo electrónico para verificar el código.'
+        }).then(() => {
+          this.abrirModalVerificarCodigo(); // <- aquí se abre el modal
+        });
       },
       error: (err) => {
         console.error('Error al enviar código:', err);
@@ -174,24 +180,19 @@ export class PerfilComponent implements OnInit {
       }
     });
   }
+  
 
   abrirModalVerificarCodigo(): void {
-    const modal = document.getElementById('verificarCodigoModal');
-    if (modal) {
-      modal.classList.add('show', 'd-block');
-      modal.style.backgroundColor = 'rgba(0,0,0,0.5)'; // opcional para overlay
-    }
+    this.mostrarModalVerificarCodigo = true;
   }
+  
   
   // Función para cerrar el modal de verificar código (quita las clases y estilos)
   cerrarModalVerificarCodigo(): void {
-    const modal = document.getElementById('verificarCodigoModal');
-    if (modal) {
-      modal.classList.remove('show', 'd-block');
-      modal.style.backgroundColor = 'transparent';
-      this.codigoVerificacion = ''; // Limpiar input al cerrar
-    }
+    this.mostrarModalVerificarCodigo = false;
+    this.codigoVerificacion = ''; // limpiar input
   }
+  
   
   enviarCodigo(): void {
     if (!this.codigoVerificacion || this.codigoVerificacion.length !== 6) {

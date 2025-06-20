@@ -98,8 +98,9 @@
                             <tr>
                               <th class="ps-0" scope="row">Correos:</th>
                               <td class="text-muted">
-                                <ul class="list-unstyled mb-0">
-                                  <li *ngFor="let correo of negocio.correos" class="d-flex align-items-center">
+                                <!-- Aquí usamos d-flex y flex-wrap nowrap para evitar salto de línea -->
+                                <ul class="list-unstyled mb-0 d-flex flex-wrap" style="gap: 1rem;">
+                                  <li *ngFor="let correo of negocio.correos" class="d-flex align-items-center me-3" style="white-space: nowrap;">
                                     <i class="fa-solid fa-envelope me-2"></i>
                                     {{ correo.correo }}
                                   </li>
@@ -110,7 +111,7 @@
                               <th class="ps-0" scope="row">Teléfonos:</th>
                               <td class="text-muted">
                                 <ul class="list-unstyled mb-0">
-                                  <li *ngFor="let tel of negocio.telefonos">
+                                  <li *ngFor="let tel of negocio.telefonos" class="d-flex align-items-center mb-1">
                                     <i class="fa-solid fa-phone me-2"></i>{{ tel.telefono }}
                                   </li>
                                 </ul>
@@ -119,8 +120,9 @@
                             <tr>
                               <th class="ps-0" scope="row">Redes Sociales:</th>
                               <td class="text-muted">
-                                <ul class="list-unstyled mb-0">
-                                  <li *ngFor="let red of negocio.redes_sociales" class="d-flex align-items-center gap-2 mb-2">
+                                <!-- Aquí usamos d-flex para mostrar los iconos y links en línea, con gap -->
+                                <ul class="list-unstyled mb-0 d-flex flex-wrap" style="gap: 1rem;">
+                                  <li *ngFor="let red of negocio.redes_sociales" class="d-flex align-items-center" style="white-space: nowrap;">
                                     <a
                                       [href]="getRedSocialUrl(red)"
                                       target="_blank"
@@ -128,12 +130,18 @@
                                       class="text-decoration-none d-flex align-items-center"
                                     >
                                       <i
-                                        class="fs-4"
+                                        class="fs-4 fa-brands"
                                         [ngClass]="{
-                                          'fa-brands fa-facebook': red.tipo.toLowerCase() === 'facebook',
-                                          'fab fa-instagram text-danger': red.tipo.toLowerCase() === 'instagram',
-                                          'fab fa-tiktok text-dark': red.tipo.toLowerCase() === 'tiktok',
-                                          'fab fa-whatsapp text-success': red.tipo.toLowerCase() === 'whatsapp'
+                                          'fa-facebook-f': red.tipo.toLowerCase() === 'facebook',
+                                          'fa-instagram': red.tipo.toLowerCase() === 'instagram',
+                                          'fa-tiktok': red.tipo.toLowerCase() === 'tiktok',
+                                          'fa-whatsapp': red.tipo.toLowerCase() === 'whatsapp'
+                                        }"
+                                        [ngStyle]="{
+                                          'color': red.tipo.toLowerCase() === 'facebook' ? '#027cd9' :
+                                                   red.tipo.toLowerCase() === 'instagram' ? '#ec3697' :
+                                                   red.tipo.toLowerCase() === 'tiktok' ? '#000000' :
+                                                   red.tipo.toLowerCase() === 'whatsapp' ? '#009e03' : ''
                                         }"
                                         aria-hidden="true"
                                       ></i>
@@ -148,6 +156,7 @@
                       </div>
                     </div>
                   </div>
+                  
   
                   <!-- Horarios de atención -->
                   <div class="card mt-4">
@@ -241,74 +250,70 @@
 
   
                   <!-- Contenedor de publicaciones -->
-<!-- Contenedor de publicaciones -->
-<div class="container mx-auto max-h-[500px] overflow-y-auto px-4">
-  <ng-container *ngIf="negocio.publicaciones.length > 0; else sinPublicaciones">
-    <div *ngFor="let pub of negocio.publicaciones" class="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200 hover:shadow-lg transition-shadow">
-      
-      <!-- Header: logo, nombre, fecha y configuración -->
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-4">
-          <img [src]="negocio.logo_url" alt="Logo" class="w-14 h-14 rounded-full object-cover" />
-          <div>
-            <h5 class="text-xl font-semibold text-gray-900">{{ negocio.nombre }}</h5>
-            <span class="text-sm text-gray-500">Publicado el {{ pub.created_at | date: 'dd/MM/yyyy HH:mm' }}</span>
-          </div>
-        </div>
-
-        <div *ngIf="mi_negocio" class="dropdown">
-          <button class="btn btn-link text-gray-600 hover:text-gray-800 p-0" id="menuOpciones" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fa-solid fa-sliders fs-5"></i>
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="menuOpciones">
-            <li>
-              <button class="dropdown-item" (click)="confirmarToggleDestacado(pub)">
-                {{ pub.destacado ? 'Quitar destacado' : 'Destacar' }}
-              </button>
-            </li>
-            <li>
-              <button class="dropdown-item" type="button" (click)="abrirModal(pub)">Editar</button>
-            </li>
-            <li>
-              <button class="dropdown-item text-danger" type="button" (click)="confirmarEliminarPublicacion(pub)">
-                Eliminar
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <hr class="mb-4 border-gray-300" />
-
-      <!-- Descripción -->
-      <p class="text-gray-700 mb-4 whitespace-pre-line">{{ pub.descripcion }}</p>
-
-      <!-- PDF botón -->
-      <div *ngIf="pub.pdf" class="mb-4">
-        <a [href]="pub.pdf" target="_blank" class="inline-block bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700 transition">
-          Ver PDF
-        </a>
-      </div>
-
-      <!-- Imágenes -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        <a *ngFor="let img of pub.imagenes" href="#" class="group relative flex h-32 md:h-40 overflow-hidden rounded-lg bg-gray-100 shadow-md">
-          <img
-            [src]="img.imagen"
-            alt="Imagen publicación"
-            loading="lazy"
-            class="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
-          />
-        </a>
-      </div>
-    </div>
-  </ng-container>
-
-  <ng-template #sinPublicaciones>
-    <p class="text-center text-gray-500 text-lg">No hay publicaciones disponibles.</p>
-  </ng-template>
-</div>
-
+                  <div class="container mx-auto max-h-[500px] overflow-y-auto px-4">
+                    <ng-container *ngIf="negocio.publicaciones.length > 0; else sinPublicaciones">
+                      <div *ngFor="let pub of negocio.publicaciones" class="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200 hover:shadow-lg transition-shadow">
+                        <!-- Header: logo, nombre y configuración -->
+                        <div class="flex items-center justify-between mb-4">
+                          <div class="flex items-center gap-4">
+                            <img [src]="negocio.logo_url" alt="Logo" class="w-14 h-14 rounded-full object-cover" />
+                            <h5 class="text-xl font-semibold text-gray-900">{{ negocio.nombre }}</h5>
+                          </div>
+                          <div *ngIf="mi_negocio" class="dropdown">
+                            <button class="btn btn-link text-gray-600 hover:text-gray-800 p-0" id="menuOpciones" data-bs-toggle="dropdown" aria-expanded="false">
+                              <i class="fa-solid fa-sliders fs-5"></i>
+                            </button>
+                          
+                            <ul class="dropdown-menu" aria-labelledby="menuOpciones">
+                              <li>
+                                <button class="dropdown-item" (click)="confirmarToggleDestacado(pub)">
+                                  {{ pub.destacado ? 'Quitar destacado' : 'Destacar' }}
+                                </button>
+                              </li>
+                              <li>
+                                <button class="dropdown-item" type="button" (click)="abrirModal(pub)">Editar</button>
+                              </li>
+                              <li>
+                                <button class="dropdown-item text-danger" type="button" (click)="confirmarEliminarPublicacion(pub)">
+                                  Eliminar
+                                </button>
+                              </li>
+                            </ul>
+                          </div>
+                          
+                        
+                        </div>
+  
+                        <hr class="mb-4 border-gray-300" />
+  
+                        <!-- Descripción -->
+                        <p class="text-gray-700 mb-4 whitespace-pre-line">{{ pub.descripcion }}</p>
+  
+                        <!-- PDF botón -->
+                        <div *ngIf="pub.pdf" class="mb-4">
+                          <a [href]="pub.pdf" target="_blank" class="inline-block bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700 transition">
+                            Ver PDF
+                          </a>
+                        </div>
+  
+                        <!-- Imágenes en collage (solo fotos, sin texto sobre ellas) -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                          <a *ngFor="let img of pub.imagenes" href="#" class="group relative flex h-32 md:h-40 overflow-hidden rounded-lg bg-gray-100 shadow-md">
+                            <img
+                              [src]="img.imagen"
+                              alt="Imagen publicación"
+                              loading="lazy"
+                              class="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
+                            />
+                          </a>
+                        </div>
+                      </div>
+                    </ng-container>
+  
+                    <ng-template #sinPublicaciones>
+                      <p class="text-center text-gray-500 text-lg">No hay publicaciones disponibles.</p>
+                    </ng-template>
+                  </div>
                 </div>
                 <!--end col-->
               </div>
@@ -438,7 +443,7 @@
           <div *ngFor="let red of nuevoContacto.redes_sociales; let i = index" class="d-flex gap-2 mb-2">
             <select [(ngModel)]="red.tipo" class="form-select w-auto">
               <option value="facebook">Facebook</option>
-              <option value="intagram">Instagram</option>
+              <option value="instagram">Instagram</option>
               <option value="tiktok">TikTok</option>
               <option value="whatsapp">WhatsApp</option>
             </select>

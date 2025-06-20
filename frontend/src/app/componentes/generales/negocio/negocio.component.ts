@@ -246,6 +246,9 @@ export class NegocioComponent implements OnInit {
   eliminarRed(index: number): void {
     this.nuevoContacto.redes_sociales.splice(index, 1);
   }
+
+
+  
   
   guardarContacto(): void {
     const payload = {
@@ -550,6 +553,9 @@ confirmarToggleDestacado(pub: any) {
           Swal.fire('Hecho', 'La publicación ha sido actualizada', 'success');
           pub.destacado = resp.publicacion.destacado;
           pub.orden = resp.publicacion.orden;
+
+          // Aquí recargas la lista completa
+          this.cargarNegocio();
         },
         error: () => {
           Swal.fire('Error', 'No se pudo actualizar la publicación', 'error');
@@ -558,6 +564,7 @@ confirmarToggleDestacado(pub: any) {
     }
   });
 }
+
 
 /////PUBLICACIONES DESTACADAS//////
 
