@@ -4,11 +4,12 @@ import { ApiService } from '../../../servicios/api.service';
 import Swal from 'sweetalert2';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './usuarios.component.html',
 })
 export class UsuariosComponent implements OnInit {

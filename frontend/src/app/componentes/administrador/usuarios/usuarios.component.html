@@ -49,31 +49,38 @@
                   </thead>
                   <tbody>
                     <tr *ngFor="let user of usuarios">
-                        <td>
-                            <div class="d-flex gap-2 align-items-center">
-                              <div class="flex-shrink-0">
-                                <ng-container *ngIf="user.foto_perfil; else letraInicial">
-                                  <img
-                                    [src]="user.foto_perfil"
-                                    alt="Foto de {{ user.name }}"
-                                    class="avatar-xs rounded-circle"
-                                    style="width:32px; height:32px; object-fit:cover;"
-                                  />
-                                </ng-container>
-                                <ng-template #letraInicial>
-                                  <div
-                                    class="avatar-xs rounded-circle bg-primary text-white d-flex justify-content-center align-items-center"
-                                    style="width:32px; height:32px; font-weight: bold; font-size: 1rem;"
-                                  >
-                                    {{ user.name?.charAt(0).toUpperCase() }}
-                                  </div>
-                                </ng-template>
+                      <td>
+                        <div class="d-flex gap-2 align-items-center">
+                          <div class="flex-shrink-0">
+                            <ng-container *ngIf="user.foto_perfil; else letraInicial">
+                              <img
+                                [src]="user.foto_perfil"
+                                alt="Foto de {{ user.name }}"
+                                class="avatar-xs rounded-circle"
+                                style="width:32px; height:32px; object-fit:cover;"
+                              />
+                            </ng-container>
+                            <ng-template #letraInicial>
+                              <div
+                                class="avatar-xs rounded-circle bg-primary text-white d-flex justify-content-center align-items-center"
+                                style="width:32px; height:32px; font-weight: bold; font-size: 1rem;"
+                              >
+                                {{ user.name?.charAt(0).toUpperCase() }}
                               </div>
-                              <div class="flex-grow-1">
-                                {{ user?.name || '-' }}
-                              </div>
-                            </div>
-                          </td>
+                            </ng-template>
+                          </div>
+                          <div class="flex-grow-1">
+                            <a
+                              [routerLink]="['/perfil', user.id]"
+                              class="text-decoration-underline text-body fw-semibold"
+                              style="cursor: pointer;"
+                            >
+                              {{ user?.name || '-' }}
+                            </a>
+                          </div>
+                        </div>
+                      </td>
+                      
                                                 <td>{{ user?.email || '-' }}</td>
                       <td>{{ user?.role_nombre || '-' }}</td>
                       <td>
