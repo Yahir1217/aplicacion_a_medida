@@ -458,7 +458,8 @@ public function VerReportes(Request $request)
     $reportes = ReportePublicacion::with([
         'usuario:id,name,email,foto_perfil,created_at',
         'publicacion:id,descripcion,negocio_id,pdf',
-        'publicacion.imagenes:id,publicacion_id,imagen', // Aquí cargas las imágenes
+        'publicacion.imagenes:id,publicacion_id,imagen', 
+        'publicacion.negocio:id,nombre,logo_url,user_id,descripcion',
         'publicacion.negocio:id,nombre,logo_url,user_id',
         'publicacion.negocio.user:id,name,email,foto_perfil,created_at',
         'publicacion.negocio.correos:id,negocio_id,correo',

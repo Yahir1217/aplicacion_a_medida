@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { ApiService } from '../../../servicios/api.service';
+import { RouterModule } from '@angular/router';
 
 interface Negocio {
   nombre: string;
@@ -19,7 +20,7 @@ interface Negocio {
 @Component({
   selector: 'app-negocios',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './negocios.component.html',
   styleUrls: ['./negocios.component.css']
 })

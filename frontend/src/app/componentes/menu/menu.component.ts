@@ -18,6 +18,7 @@ export class MenuComponent implements OnInit {
   nombreUsuario: string = '';
   emailUsuario: string = '';
   usuarioFotoPerfil: string | null = null;  
+  userId: string | null = null;
 
 
   constructor(
@@ -31,6 +32,8 @@ export class MenuComponent implements OnInit {
       const token = sessionStorage.getItem('token');
       if (token) {
         const id = sessionStorage.getItem('user_id');
+        this.userId = id; // guardar para usar en [routerLink]
+
         if (id) {
           this.apiService.obtenerUsuario(id).subscribe({
             next: (data) => {

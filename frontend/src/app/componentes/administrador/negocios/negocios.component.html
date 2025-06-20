@@ -27,10 +27,10 @@
                 <table class="table align-middle table-nowrap" id="negocioTable">
                   <thead class="table-light">
                     <tr>
+                      <th>Logo</th>
                       <th>Nombre</th>
-                      <th>Descripción</th>
                       <th>Estado</th>
-                      <th>Usuario Asociado</th> 
+                      <th>Usuario Asociado</th>
                       <th>Fecha de Pago</th>
                       <th>Fecha de Vencimiento</th>
                       <th>Acción</th>
@@ -38,28 +38,94 @@
                   </thead>
                   <tbody>
                     <tr *ngFor="let negocio of negocios">
+                      <!-- Foto negocio -->
+                      <td>
+                        <a [routerLink]="['/negocio', negocio.id]" class="d-flex align-items-center text-decoration-none text-dark">
+                          <img
+                            [src]="negocio.logo_url"
+                            alt="Logo negocio"
+                            class="rounded-circle img-thumbnail me-2"
+                            style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;"
+                            *ngIf="negocio.logo_url; else noLogoNegocio"
+                          />
+                          <ng-template #noLogoNegocio>
+                            <div
+                              class="rounded-circle bg-light text-muted d-flex justify-content-center align-items-center me-2"
+                              style="width: 50px; height: 50px; font-size: 20px; border-radius: 50%;"
+                            >
+                              {{ negocio.nombre ? negocio.nombre[0] : '?' }}
+                            </div>
+                          </ng-template>
+                          {{ negocio?.nombre || '-' }}
+                        </a>
+                      </td>
+                      
+                
                       <td>{{ negocio?.nombre || '-' }}</td>
-                      <td>{{ negocio?.descripcion || '-' }}</td>
+                
                       <td>{{ negocio?.estado || '-' }}</td>
-                      <td>{{ negocio.user?.name }}</td> 
+                
+                      <td class="d-flex align-items-center gap-2">
+                        <!-- Foto usuario con link -->
+                        <a
+                          [routerLink]="['/perfil', negocio.user?.id]"
+                          class="d-flex align-items-center text-decoration-none text-dark"
+                          style="gap: 0.5rem;"
+                        >
+                          <ng-container *ngIf="negocio.user?.foto_perfil; else noFotoUsuario">
+                            <img
+                              [src]="negocio.user.foto_perfil"
+                              alt="Foto usuario"
+                              class="rounded-circle img-thumbnail"
+                              style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;"
+                            />
+                          </ng-container>
+                          <ng-template #noFotoUsuario>
+                            <div
+                              class="rounded-circle bg-light text-muted d-flex justify-content-center align-items-center"
+                              style="width: 50px; height: 50px; font-size: 20px; border-radius: 50%;"
+                            >
+                              {{ negocio.user?.name ? negocio.user.name[0] : '?' }}
+                            </div>
+                          </ng-template>
+                      
+                          <!-- Nombre del usuario -->
+                          <span>{{ negocio.user?.name || '-' }}</span>
+                        </a>
+                      </td>
+                      
+                
                       <td>{{ negocio?.fecha_pago || '-' }}</td>
+                
                       <td>{{ negocio?.fecha_vencimiento || '-' }}</td>
+                
                       <td>
                         <div class="d-flex gap-2">
-                          <button class="btn btn-sm btn-success" (click)="seleccionarNegocio(negocio)" data-bs-toggle="modal" data-bs-target="#negocioModal">
+                          <button
+                            class="btn btn-sm btn-success"
+                            (click)="seleccionarNegocio(negocio)"
+                            data-bs-toggle="modal"
+                            data-bs-target="#negocioModal"
+                          >
                             Editar
                           </button>
-                          <button class="btn btn-sm btn-danger" (click)="eliminarNegocio(negocio?.id)" [disabled]="!negocio?.id">
+                          <button
+                            class="btn btn-sm btn-danger"
+                            (click)="eliminarNegocio(negocio?.id)"
+                            [disabled]="!negocio?.id"
+                          >
                             Eliminar
                           </button>
                         </div>
                       </td>
                     </tr>
+                
                     <tr *ngIf="negocios.length === 0">
-                      <td colspan="6" class="text-center">No se encontraron negocios.</td>
+                      <td colspan="7" class="text-center">No se encontraron negocios.</td>
                     </tr>
                   </tbody>
                 </table>
+                
               </div>
             </div>
           </div>

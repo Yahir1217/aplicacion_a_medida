@@ -183,8 +183,12 @@
         <!-- Usuario -->
         <div class="card-body text-center" *ngIf="tipoDetalle === 'usuario'">
           <ng-container *ngIf="detalle.foto_perfil; else letraUser">
-            <img [src]="detalle.foto_perfil" class="avatar-lg rounded-circle img-thumbnail mb-3" alt="Foto usuario">
-          </ng-container>
+            <div class="d-flex justify-content-center mb-3">
+
+            <img [src]="detalle.foto_perfil" class="avatar-lg rounded-circle img-thumbnail mb-3" style="width: 120px; height: 120px; object-fit: cover;" alt="Foto usuario">
+        </div>
+
+        </ng-container>
           <ng-template #letraUser>
             <div class="avatar-lg rounded-circle bg-light text-muted d-flex justify-content-center align-items-center mx-auto mb-3"
                  style="width: 96px; height: 96px; font-size: 24px;">
@@ -199,74 +203,99 @@
   
         <!-- Negocio -->
         <div class="card-body text-center" *ngIf="tipoDetalle === 'negocio'">
-          <ng-container *ngIf="detalle.logo_url; else letraNeg">
-            <img [src]="detalle.logo_url" class="avatar-lg rounded-circle img-thumbnail mb-3" alt="Logo negocio">
-          </ng-container>
-          <ng-template #letraNeg>
-            <div class="avatar-lg rounded-circle bg-light text-muted d-flex justify-content-center align-items-center mx-auto mb-3"
-                 style="width: 96px; height: 96px; font-size: 24px;">
-              {{ detalle.nombre[0] }}
-            </div>
-          </ng-template>
-          <h5>{{ detalle.nombre }}</h5>
-          <p class="text-muted mb-1">
-            <strong>Dueño:</strong> {{ detalle.user.name }}
-          </p>
-          <p class="text-muted">
-            <strong>Descripción:</strong> {{ detalle.descripcion || 'Sin descripción' }}
-          </p>
+<!-- Logo del negocio -->
+<ng-container *ngIf="detalle.logo_url; else letraNeg">
+    <div class="d-flex justify-content-center mb-3">
+      <img [src]="detalle.logo_url"
+           alt="Logo negocio"
+           style="width: 120px; height: 120px; object-fit: cover;"
+           class="rounded-circle border" />
+    </div>
+  </ng-container>
   
-          <!-- Contacto del negocio -->
-          <div class="card mt-3 text-start">
-            <div class="card-body p-2" style="max-height: 250px; overflow-y: auto;">
-              <h5 class="card-title mb-3">Contacto del negocio</h5>
-              <table class="table table-borderless mb-0">
-                <tbody>
-                  <!-- Correos -->
-                  <tr *ngFor="let correo of detalle.correos">
-                    <th class="ps-0" style="width: 110px;">
-                      <i class="fa-solid fa-envelope me-2"></i>Correo:
-                    </th>
-                    <td class="text-muted">{{ correo.correo }}</td>
-                  </tr>
+  <!-- Inicial del negocio si no tiene logo -->
+  <ng-template #letraNeg>
+    <div class="rounded-circle bg-light text-muted d-flex justify-content-center align-items-center mx-auto mb-3 border"
+         style="width: 120px; height: 120px; font-size: 32px;">
+      {{ detalle.nombre[0] }}
+    </div>
+  </ng-template>
   
-                  <!-- Teléfonos -->
-                  <tr *ngFor="let tel of detalle.telefonos">
-                    <th class="ps-0" style="width: 110px;">
-                      <i class="fa-solid fa-phone me-2"></i>Teléfono:
-                    </th>
-                    <td class="text-muted">{{ tel.telefono }}</td>
-                  </tr>
+  <!-- Nombre del negocio -->
+  <h5 class="text-center">{{ detalle.nombre }}</h5>
   
-                  <!-- Redes Sociales -->
-                  <tr *ngFor="let red of detalle.redes_sociales">
-                    <th class="ps-0" style="width: 110px;" class="d-flex align-items-center">
-                      <i
-                        class="fs-5 me-2"
-                        [ngClass]="{
-                          'fa-brands fa-facebook text-primary': red.tipo.toLowerCase() === 'facebook',
-                          'fa-brands fa-instagram text-danger': red.tipo.toLowerCase() === 'instagram',
-                          'fa-brands fa-tiktok text-dark': red.tipo.toLowerCase() === 'tiktok',
-                          'fa-brands fa-whatsapp text-success': red.tipo.toLowerCase() === 'whatsapp'
-                        }"
-                      ></i>
-                      {{ red.tipo }}:
-                    </th>
-                    <td class="text-muted">
-                      <a
-                        [href]="getRedSocialUrl(red)"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-decoration-none"
-                      >
-                        {{ red.url }}
-                      </a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+  <!-- Dueño del negocio -->
+  <p class="text-muted text-center mb-1">
+    <strong>Dueño:</strong> {{ detalle.user.name }}
+  </p>
+  
+  <!-- Descripción del negocio -->
+  <p class="text-muted text-center">
+    <strong>Descripción:</strong> {{ detalle.descripcion || 'Sin descripción' }}
+  </p>
+  
+  
+<!-- Contacto del negocio -->
+<div class="card mt-3 text-start">
+    <div class="card-body p-2" style="max-height: 250px; overflow-y: auto;">
+      <h5 class="card-title mb-3">Contacto del negocio</h5>
+      <table class="table table-borderless mb-0">
+        <tbody>
+          <!-- Correos -->
+          <tr *ngFor="let correo of detalle.correos">
+            <th class="ps-0" style="width: 110px;">
+              <i class="fa-solid fa-envelope me-2"></i>Correo:
+            </th>
+            <td class="text-muted">{{ correo.correo }}</td>
+          </tr>
+  
+          <!-- Teléfonos -->
+          <tr *ngFor="let tel of detalle.telefonos">
+            <th class="ps-0" style="width: 110px;">
+              <i class="fa-solid fa-phone me-2"></i>Teléfono:
+            </th>
+            <td class="text-muted">{{ tel.telefono }}</td>
+          </tr>
+  
+          <!-- Redes Sociales (todas en una línea) -->
+          <tr *ngIf="detalle.redes_sociales.length > 0">
+            <th class="ps-0" style="width: 110px;">
+              <i class="fa-solid fa-share-nodes me-2"></i>Redes:
+            </th>
+            <td class="text-muted">
+              <div class="d-flex flex-wrap align-items-center" style="gap: 1rem;">
+                <ng-container *ngFor="let red of detalle.redes_sociales">
+                  <a
+                    [href]="getRedSocialUrl(red)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-decoration-none"
+                  >
+                    <i
+                      class="fa-brands fs-4"
+                      [ngClass]="{
+                        'fa-facebook-f': red.tipo.toLowerCase() === 'facebook',
+                        'fa-instagram': red.tipo.toLowerCase() === 'instagram',
+                        'fa-tiktok': red.tipo.toLowerCase() === 'tiktok',
+                        'fa-whatsapp': red.tipo.toLowerCase() === 'whatsapp'
+                      }"
+                      [ngStyle]="{
+                        'color': red.tipo.toLowerCase() === 'facebook' ? '#027cd9' :
+                                 red.tipo.toLowerCase() === 'instagram' ? '#ec3697' :
+                                 red.tipo.toLowerCase() === 'tiktok' ? '#000000' :
+                                 red.tipo.toLowerCase() === 'whatsapp' ? '#009e03' : ''
+                      }"
+                    ></i>
+                  </a>
+                </ng-container>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
         </div>
   
         <!-- Publicación -->

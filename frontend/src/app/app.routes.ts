@@ -40,8 +40,8 @@ export const routes: Routes = [
       import('./componentes/administrador/negocios/negocios.component').then(m => m.NegociosComponent),
   },
   {
-    path: 'perfil',
-    canActivate: [AuthGuard], // <- y aquí también
+    path: 'perfil/:id',
+    canActivate: [AuthGuard],
     loadComponent: () =>
       import('./componentes/generales/perfil/perfil.component').then(m => m.PerfilComponent),
   },

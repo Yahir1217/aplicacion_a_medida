@@ -57,22 +57,23 @@
                     </ul>
                     <div class="flex-shrink-0 flex items-center gap-2">
                       <!-- Botón Editar perfil (solo habilitado si email_verified_at NO es null) -->
-                      <button
-                        class="btn btn-success"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editarPerfilModal"
-                        [disabled]="!usuario.email_verified_at">
-                        <i class="ri-edit-box-line align-bottom"></i> Editar perfil
-                      </button>
-                    
-                      <!-- Nuevo botón que aparece SOLO si email_verified_at ES null -->
-                      <button
-                      class="btn btn-warning"
-                      *ngIf="!usuario.email_verified_at"
-                      (click)="accionParaEmailNoVerificado()">
-                      <i class="ri-error-warning-line align-bottom"></i> Verificar correo
-                    </button>
-                    
+<!-- Botón Editar perfil: solo se muestra si puedeEditar Y el correo ya está verificado -->
+<button
+  class="btn btn-success"
+  data-bs-toggle="modal"
+  data-bs-target="#editarPerfilModal"
+  *ngIf="puedeEditar && usuario.email_verified_at">
+  <i class="ri-edit-box-line align-bottom"></i> Editar perfil
+</button>
+
+<!-- Botón Verificar correo: solo si puedeEditar y el correo NO está verificado -->
+<button
+  class="btn btn-warning"
+  *ngIf="puedeEditar && !usuario.email_verified_at"
+  (click)="accionParaEmailNoVerificado()">
+  <i class="ri-error-warning-line align-bottom"></i> Verificar correo
+</button>
+
                     
                     </div>
                     

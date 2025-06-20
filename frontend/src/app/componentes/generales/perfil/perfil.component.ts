@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ChangeDetectorRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-perfil',
@@ -28,28 +29,36 @@ export class PerfilComponent implements OnInit {
   password: string = '';
   confirmarPassword: string = '';
   fotoPerfilFile: File | null = null;
+  puedeEditar: boolean = false;
 
 
-  constructor(private apiService: ApiService, private sanitizer: DomSanitizer, private cdRef: ChangeDetectorRef
+
+  constructor(private route: ActivatedRoute, private apiService: ApiService, private sanitizer: DomSanitizer, private cdRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     const token = sessionStorage.getItem('token');
+  
     if (!token) {
       console.warn('Token no disponible todavía, no se llamó a obtenerUsuario().');
       return;
     }
-    this.obtenerUsuario();
-  }
   
-
-  obtenerUsuario(): void {
-    const id = sessionStorage.getItem('user_id');
+    const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      console.warn('ID de usuario no encontrado en sessionStorage.');
+      console.warn('ID de usuario no proporcionado en la ruta.');
       return;
     }
   
+    const idSession = sessionStorage.getItem('user_id');
+    this.puedeEditar = id === idSession;
+  
+    this.obtenerUsuario(id);
+  }
+  
+  
+
+  obtenerUsuario(id: string): void {
     this.apiService.obtenerUsuarioPerfil(id).subscribe({
       next: (data) => {
         this.usuario = {
@@ -64,7 +73,7 @@ export class PerfilComponent implements OnInit {
   
         console.log('Usuario actualizado:', this.usuario);
   
-        if(this.usuario.foto_perfil) {
+        if (this.usuario.foto_perfil) {
           this.fotoPerfilSegura = this.sanitizer.bypassSecurityTrustResourceUrl(this.usuario.foto_perfil);
         } else {
           this.fotoPerfilSegura = '';
@@ -75,7 +84,7 @@ export class PerfilComponent implements OnInit {
       }
     });
   }
-
+  
 
   
 
@@ -216,7 +225,7 @@ export class PerfilComponent implements OnInit {
           this.cerrarModalVerificarCodigo();
   
           // Actualiza datos sin recargar la página
-          this.obtenerUsuario();
+          this.obtenerUsuario(id);
         });
       },
       error: (err) => {

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../servicios/api.service';
 import { HttpClientModule } from '@angular/common/http';
@@ -10,7 +10,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
 @Component({
   selector: 'app-negocio',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule, DragDropModule],
+  imports: [CommonModule, HttpClientModule, FormsModule, DragDropModule, RouterModule],
   templateUrl: './negocio.component.html',
   styleUrls: ['./negocio.component.css']
 })
