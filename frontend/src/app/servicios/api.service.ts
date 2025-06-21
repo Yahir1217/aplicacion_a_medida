@@ -267,8 +267,20 @@ export class ApiService {
       const token = sessionStorage.getItem('token');
       const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     
-      return this.http.get<any>(`${this.apiUrl}/publicaciones?page=${page}&limit=${limit}`, { headers });
+      // Nota: en la ruta no usas "limit" sino "cantidad", ajusta si quieres
+      return this.http.get<any>(`${this.apiUrl}/publicaciones?page=${page}&cantidad=${limit}`, { headers });
     }
+    
+    getNegocios(page: number, limit: number = 5): Observable<any> {
+      const headers = this.getAuthHeaders();
+      return this.http.get<any>(`${this.apiUrl}/negocios_generales?page=${page}&cantidad=${limit}`, { headers });
+    }
+    
+    getUsuarios(page: number, limit: number = 5): Observable<any> {
+      const headers = this.getAuthHeaders();
+      return this.http.get<any>(`${this.apiUrl}/usuarios_generales?page=${page}&cantidad=${limit}`, { headers });
+    }
+    
 
     reportarPublicacion(reporte: { user_id: number; publicacion_id: number; comentario: string }): Observable<any> {
       return this.http.post(
@@ -289,6 +301,19 @@ export class ApiService {
       const headers = this.getAuthHeaders();
       return this.http.post(`${this.apiUrl}/reportes/${id}/marcar-visto`, {}, { headers });
     }
+
+
+// publicacion.service.ts
+guardarPublicacionUsuario(data: FormData) {
+  const token = localStorage.getItem('token');
+  return this.http.post(`${this.apiUrl}/publicaciones/usuario`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
+
+    
     
     
 

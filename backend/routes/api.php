@@ -69,10 +69,14 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/usuarios/{id}/actualizar', [UsuarioController::class, 'actualizar']);
     Route::post('/enviar-codigo-verificacion/{id}', [UsuarioController::class, 'enviarCodigoVerificacion']);
     Route::post('/verificar-codigo-email', [UsuarioController::class, 'verificarCodigoEmail']);
-
+ 
     ///GENERALES
     Route::get('/publicaciones', [NegocioController::class, 'PublicacionesGenerales']);
+    Route::get('/negocios_generales', [NegocioController::class, 'NegociosGenerales']);
+    Route::get('/usuarios_generales', [NegocioController::class, 'UsuariosGenerales']);
+
     Route::post('/reportes', [NegocioController::class, 'SubirReporte']);
+    Route::post('/publicaciones/usuario', [NegocioController::class, 'storePublicacionUsuario']);
 
     ///ADMINISTRADOR
     Route::get('/reportes-publicaciones', [NegocioController::class, 'VerReportes']);

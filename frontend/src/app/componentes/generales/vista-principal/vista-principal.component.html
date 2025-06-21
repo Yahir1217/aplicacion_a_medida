@@ -1,10 +1,11 @@
 <!-- CABECERA: Buscador + Botón Nueva Publicación -->
 <div class="w-full px-4 py-4 bg-white shadow-md border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3">
-  
   <!-- Selector de filtro -->
   <div class="w-full sm:w-auto">
     <div class="relative inline-block w-48">
       <select
+        [(ngModel)]="tipoBusqueda"
+        (change)="onTipoBusquedaChange()"
         class="appearance-none w-full rounded-lg border border-gray-300 shadow-sm px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         aria-label="Seleccionar tipo de búsqueda"
       >
@@ -19,16 +20,16 @@
         </svg>
       </div>
     </div>
-    
   </div>
 
   <!-- Buscador -->
   <div class="relative w-full sm:w-1/2">
     <input 
       type="text" 
+      [(ngModel)]="textoBusqueda"
+      (input)="filtrar()"
       placeholder="Buscar..." 
       class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-
       aria-label="Campo de búsqueda"
     />
     <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -36,97 +37,158 @@
     </span>
   </div>
 
-  <!-- Botón nueva publicación -->
+  <!-- Botón nueva publicación (solo si es búsqueda de publicaciones) -->
   <button 
+    *ngIf="tipoBusqueda === 'publicacion'"
     class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition text-sm"
     title="Agregar nueva publicación"
-
-  >
+    data-bs-toggle="modal"
+    data-bs-target="#modalPublicacionUsuario">
     <i class="fa-solid fa-plus mr-2"></i> Nueva publicación
   </button>
 </div>
 
-
-
-<!-- CONTENEDOR DE PUBLICACIONES -->
 <div class="w-full h-[calc(100vh-80px)] overflow-y-auto px-4">
-  <ng-container *ngIf="publicaciones.length > 0; else sinPublicaciones">
-    <div *ngFor="let pub of publicaciones" class="relative bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200 hover:shadow-lg transition-shadow">
-      
-      <!-- Icono reportar publicación -->
-      <div 
-        class="absolute top-4 right-4 text-red-600 cursor-pointer" 
-        title="Reportar publicación"
-        (click)="abrirModalReporte(pub.id)"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" 
-             stroke-linecap="round" stroke-linejoin="round" class="feather feather-flag w-6 h-6">
-          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
-        </svg>
-      </div>
 
-      <!-- Header: logo y nombre con link al negocio -->
-      <div class="flex items-center justify-between mb-4">
-        <a 
-          [routerLink]="['/negocio', pub.negocio.id]"
-          class="flex items-center gap-4 hover:bg-gray-50 px-2 py-1 rounded transition"
-          title="Ver negocio"
+  <!-- Mostrar publicaciones -->
+  <ng-container *ngIf="tipoBusqueda === 'publicacion'">
+    <ng-container *ngIf="datosFiltrados.length > 0; else sinDatos">
+      <div *ngFor="let pub of datosFiltrados" class="relative bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200 hover:shadow-lg transition-shadow">      
+        <!-- Icono reportar publicación -->
+        <div 
+          class="absolute top-4 right-4 text-red-600 cursor-pointer" 
+          title="Reportar publicación"
+          (click)="abrirModalReporte(pub.id)"
         >
-          <img 
-            [src]="pub.negocio.logo_url" 
-            alt="Logo" 
-            class="w-14 h-14 rounded-full object-cover border border-gray-300" 
-          />
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" 
+               stroke-linecap="round" stroke-linejoin="round" class="feather feather-flag w-6 h-6">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+          </svg>
+        </div>
+
+        <!-- Header: negocio o usuario -->
+        <div class="flex items-center justify-between mb-4">
+          <ng-container *ngIf="pub.negocio; else usuarioHeader">
+            <!-- Mostrar negocio -->
+            <a 
+              [routerLink]="['/negocio', pub.negocio.id]"
+              class="flex items-center gap-4 hover:bg-gray-50 px-2 py-1 rounded transition"
+              title="Ver negocio"
+            >
+              <img 
+                [src]="pub.negocio.logo_url" 
+                alt="Logo negocio" 
+                class="w-14 h-14 rounded-full object-cover border border-gray-300" 
+              />
+              <div>
+                <h5 class="text-xl font-semibold text-blue-700 hover:underline">
+                  {{ pub.negocio.nombre }}
+                </h5>
+                <span class="text-sm text-gray-500">
+                  Publicado el {{ pub.created_at | date: 'dd/MM/yyyy HH:mm' }}
+                </span>
+              </div>
+            </a>
+          </ng-container>
+
+          <ng-template #usuarioHeader>
+            <a 
+              [routerLink]="['/perfil', pub.usuario?.id]" 
+              class="flex items-center gap-4 bg-gray-50 px-2 py-1 rounded hover:bg-gray-100 transition"
+              title="Ver perfil del usuario"
+            >
+              <img 
+                [src]="pub.usuario?.foto_perfil || 'https://ui-avatars.com/api/?name=' + pub.usuario?.name" 
+                alt="Foto usuario" 
+                class="w-14 h-14 rounded-full object-cover border border-gray-300" 
+              />
+              <div>
+                <h5 class="text-xl font-semibold text-green-700 hover:underline">
+                  {{ pub.usuario?.name }}
+                </h5>
+                <span class="text-sm text-gray-500">
+                  Publicado el {{ pub.created_at | date: 'dd/MM/yyyy HH:mm' }}
+                </span>
+              </div>
+            </a>
+          </ng-template>
+        </div>
+
+        <hr class="mb-4 border-gray-300" />
+
+        <!-- Descripción -->
+        <p class="text-gray-700 mb-4 whitespace-pre-line">{{ pub.descripcion }}</p>
+
+        <!-- PDF -->
+        <div *ngIf="pub.pdf" class="mb-4">
+          <a [href]="pub.pdf" target="_blank" class="inline-block bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700 transition">
+            Ver PDF
+          </a>
+        </div> 
+
+        <!-- Imágenes -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <ng-container *ngFor="let img of pub.imagenes.slice(0, 4); let i = index">
+            <a href="#" 
+               (click)="abrirModal(pub.imagenes, i, $event)" 
+               class="group relative flex h-28 md:h-32 overflow-hidden rounded-lg bg-gray-100 shadow-md border border-gray-300">
+              
+              <img
+                [src]="img.imagen"
+                alt="Imagen publicación"
+                loading="lazy"
+                class="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
+              />
+
+              <!-- Overlay en la cuarta imagen si hay más -->
+              <div *ngIf="i === 3 && pub.imagenes.length > 4" 
+                   class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center text-white text-2xl font-bold select-none">
+                +{{ pub.imagenes.length - 4 }}
+              </div>
+            </a>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <!-- Mostrar negocios -->
+  <ng-container *ngIf="tipoBusqueda === 'negocio'">
+    <ng-container *ngIf="datosFiltrados.length > 0; else sinDatos">
+      <div *ngFor="let negocio of datosFiltrados" class="bg-white rounded-lg shadow-md p-4 mb-4 border border-gray-200 hover:shadow-lg transition">
+        <a [routerLink]="['/negocio', negocio.id]" class="flex items-center gap-4 hover:bg-gray-50 px-2 py-1 rounded transition" title="Ver negocio">
+          <img [src]="negocio.logo_url" alt="Logo negocio" class="w-14 h-14 rounded-full object-cover border border-gray-300" />
           <div>
-            <h5 class="text-xl font-semibold text-blue-700 hover:underline">
-              {{ pub.negocio.nombre }}
-            </h5>
-            <span class="text-sm text-gray-500">
-              Publicado el {{ pub.created_at | date: 'dd/MM/yyyy HH:mm' }}
-            </span>
+            <h5 class="text-xl font-semibold text-blue-700 hover:underline">{{ negocio.nombre }}</h5>
           </div>
         </a>
       </div>
-  
-      <hr class="mb-4 border-gray-300" />
-      <p class="text-gray-700 mb-4 whitespace-pre-line">{{ pub.descripcion }}</p>
-  
-      <!-- PDF -->
-      <div *ngIf="pub.pdf" class="mb-4">
-        <a [href]="pub.pdf" target="_blank" class="inline-block bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700 transition">
-          Ver PDF
-        </a>
-      </div> 
-  
-      <!-- Imágenes -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        <ng-container *ngFor="let img of pub.imagenes.slice(0, 4); let i = index">
-          <a href="#" 
-             (click)="abrirModal(pub.imagenes, i, $event)" 
-             class="group relative flex h-28 md:h-32 overflow-hidden rounded-lg bg-gray-100 shadow-md border border-gray-300">
-            
-            <img
-              [src]="img.imagen"
-              alt="Imagen publicación"
-              loading="lazy"
-              class="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
-            />
-  
-            <!-- Overlay en la cuarta imagen si hay más -->
-            <div *ngIf="i === 3 && pub.imagenes.length > 4" 
-                 class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center text-white text-2xl font-bold select-none">
-              +{{ pub.imagenes.length - 4 }}
-            </div>
-          </a>
-        </ng-container>
-      </div>
-    </div>
+    </ng-container>
   </ng-container>
-  
-  <ng-template #sinPublicaciones>
-    <p class="text-center text-gray-500 text-lg">No hay publicaciones disponibles.</p>
+
+  <!-- Mostrar usuarios -->
+  <ng-container *ngIf="tipoBusqueda === 'usuario'">
+    <ng-container *ngIf="datosFiltrados.length > 0; else sinDatos">
+      <div *ngFor="let usuario of datosFiltrados" class="bg-white rounded-lg shadow-md p-4 mb-4 border border-gray-200 hover:shadow-lg transition">
+        <a [routerLink]="['/perfil', usuario.id]" class="flex items-center gap-4 hover:bg-gray-50 px-2 py-1 rounded transition" title="Ver perfil del usuario">
+          <img 
+            [src]="usuario.foto_perfil || 'https://ui-avatars.com/api/?name=' + usuario.name" 
+            alt="Foto usuario" 
+            class="w-14 h-14 rounded-full object-cover border border-gray-300" 
+          />
+          <div>
+            <h5 class="text-xl font-semibold text-green-700 hover:underline">{{ usuario.name }}</h5>
+          </div>
+        </a>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <!-- Mensaje cuando no hay datos -->
+  <ng-template #sinDatos>
+    <p class="text-center text-gray-500 text-lg">No hay resultados disponibles.</p>
   </ng-template>
-  
+
   <!-- Loading Spinner -->
   <div *ngIf="loading" class="flex justify-center py-6">
     <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -135,6 +197,7 @@
     </svg>
   </div>
 </div>
+
 
   
 
@@ -206,4 +269,59 @@
       </div>
     </div>
   </div>
+
+
+
+
+
+
+
+
+<!-- MODAL -->
+<div class="modal fade" id="modalPublicacionUsuario" tabindex="-1" aria-labelledby="modalPublicacionUsuarioLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalPublicacionUsuarioLabel">Nueva publicación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="formPublicacion" (ngSubmit)="guardarPublicacion()">
+          <!-- Descripción -->
+          <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea rows="4" class="form-control" formControlName="descripcion"></textarea>
+          </div>
+
+          <!-- PDF opcional -->
+          <div class="mb-3">
+            <label class="form-label">Archivo PDF (opcional)</label>
+            <input type="file" class="form-control" accept="application/pdf" (change)="onPdfSelected($event)" />
+          </div>
+
+          <!-- Imágenes -->
+          <div class="mb-3">
+            <label class="form-label">Imágenes (máx. 5MB c/u)</label>
+            <input type="file" class="form-control" multiple accept="image/*" (change)="onImagenesSeleccionadas($event)" />
+          </div>
+
+          <!-- Vista previa -->
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            <div *ngFor="let img of imagenesPreview" class="position-relative">
+              <img [src]="img" class="rounded border" style="width: 80px; height: 80px; object-fit: cover;" />
+            </div>
+          </div>
+
+          <!-- Botón guardar -->
+          <div class="mt-4 text-end">
+            <button class="btn btn-primary" type="submit" [disabled]="formPublicacion.invalid || loading">
+              <i class="fa fa-save me-1"></i> Guardar publicación
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
   

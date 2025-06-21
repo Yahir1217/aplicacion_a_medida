@@ -16,143 +16,152 @@
         <div class="card-body">
           <div class="table-responsive table-card mb-3">
             <table class="table align-middle table-nowrap mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th style="width: 40px;">#</th>
-                    <th style="min-width: 180px;">Reportado por</th>
-                    <th style="min-width: 120px;">Comentario</th>
-                    <th style="min-width: 180px;">Negocio</th>
-                    <th style="min-width: 180px;">Dueño negocio</th>
-                    <th style="min-width: 150px;">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let rep of reportesFiltrados">
-                    <td>{{ rep.id }}</td>
-              
-                    <!-- Usuario que reportó -->
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <ng-container *ngIf="rep.usuario.foto_perfil; else letraUsuario">
-                          <img
-                            [src]="rep.usuario.foto_perfil"
-                            class="rounded-circle me-2"
-                            width="32"
-                            height="32"
-                            alt="Foto"
-                            style="object-fit: cover;"
-                          >
-                        </ng-container>
-                        <ng-template #letraUsuario>
-                          <div
-                            class="rounded-circle bg-light text-muted text-uppercase d-flex justify-content-center align-items-center me-2"
-                            style="width:32px; height:32px;"
-                          >
-                            {{ rep.usuario.name[0] }}
-                          </div>
-                        </ng-template>
-                        <span>{{ rep.usuario.name }}</span>
-                      </div>
-                    </td>
-              
-                    <!-- Botón Ver reporte -->
-                    <td>
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 40px;">#</th>
+                  <th style="min-width: 180px;">Reportado por</th>
+                  <th style="min-width: 120px;">Comentario</th>
+                  <th style="min-width: 180px;">Negocio</th>
+                  <th style="min-width: 180px;">Dueño publicación</th> <!-- Cambié texto -->
+                  <th style="min-width: 150px;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rep of reportesFiltrados">
+                  <td>{{ rep.id }}</td>
+            
+                  <!-- Usuario que reportó -->
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <ng-container *ngIf="rep.usuario.foto_perfil; else letraUsuario">
+                        <img
+                          [src]="rep.usuario.foto_perfil"
+                          class="rounded-circle me-2"
+                          width="32"
+                          height="32"
+                          alt="Foto"
+                          style="object-fit: cover;"
+                        >
+                      </ng-container>
+                      <ng-template #letraUsuario>
+                        <div
+                          class="rounded-circle bg-light text-muted text-uppercase d-flex justify-content-center align-items-center me-2"
+                          style="width:32px; height:32px;"
+                        >
+                          {{ rep.usuario.name[0] }}
+                        </div>
+                      </ng-template>
+                      <span>{{ rep.usuario.name }}</span>
+                    </div>
+                  </td>
+            
+                  <!-- Botón Ver reporte -->
+                  <td>
+                    <button
+                      class="btn btn-sm btn-outline-secondary"
+                      (click)="verDetalle(rep, 'comentario')"
+                    >
+                      Ver reporte
+                    </button>
+                  </td>
+            
+                  <!-- Negocio -->
+                  <td>
+                    <a
+                      href="javascript:void(0);"
+                      (click)="verDetalle(rep.publicacion.negocio, 'negocio')"
+                      class="text-decoration-none d-flex align-items-center"
+                      *ngIf="rep.publicacion.negocio; else sinNegocio"
+                    >
+                      <ng-container *ngIf="rep.publicacion.negocio.logo_url; else letraNegocio">
+                        <img
+                          [src]="rep.publicacion.negocio.logo_url"
+                          class="rounded-circle me-2"
+                          width="32"
+                          height="32"
+                          alt="Logo"
+                          style="object-fit: cover;"
+                        >
+                      </ng-container>
+                      <ng-template #letraNegocio>
+                        <div
+                          class="rounded-circle bg-light text-muted text-uppercase d-flex justify-content-center align-items-center me-2"
+                          style="width:32px; height:32px;"
+                        >
+                          {{ rep.publicacion.negocio.nombre[0] }}
+                        </div>
+                      </ng-template>
+                      {{ rep.publicacion.negocio.nombre }}
+                    </a>
+                    <ng-template #sinNegocio>
+                      <span class="text-muted fst-italic">Sin negocio</span>
+                    </ng-template>
+                  </td>
+            
+                  <!-- Dueño publicación (usuario dueño) -->
+                  <td>
+                    <a
+                      href="javascript:void(0);"
+                      (click)="verDetalle(rep.publicacion.usuario, 'usuario')"
+                      class="text-decoration-none d-flex align-items-center"
+                      *ngIf="rep.publicacion.usuario; else sinUsuario"
+                    >
+                      <ng-container *ngIf="rep.publicacion.usuario.foto_perfil; else letraDueno">
+                        <img
+                          [src]="rep.publicacion.usuario.foto_perfil"
+                          class="rounded-circle me-2"
+                          width="32"
+                          height="32"
+                          alt="Foto"
+                          style="object-fit: cover;"
+                        >
+                      </ng-container>
+                      <ng-template #letraDueno>
+                        <div
+                          class="rounded-circle bg-light text-muted text-uppercase d-flex justify-content-center align-items-center me-2"
+                          style="width:32px; height:32px;"
+                        >
+                          {{ rep.publicacion.usuario.name[0] }}
+                        </div>
+                      </ng-template>
+                      {{ rep.publicacion.usuario.name }}
+                    </a>
+                    <ng-template #sinUsuario>
+                      <span class="text-muted fst-italic">Sin usuario</span>
+                    </ng-template>
+                  </td>
+            
+                  <!-- Acciones -->
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <!-- Botón Ver publicación -->
                       <button
-                        class="btn btn-sm btn-outline-secondary"
-                        (click)="verDetalle(rep, 'comentario')"
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="verDetalle(rep.publicacion, 'publicacion')"
+                        title="Ver publicación"
                       >
-                        Ver reporte
+                        <i class="fa-solid fa-file-lines"></i>
                       </button>
-                    </td>
-              
-                    <!-- Negocio -->
-                    <td>
-                      <a
-                        href="javascript:void(0);"
-                        (click)="verDetalle(rep.publicacion.negocio, 'negocio')"
-                        class="text-decoration-none d-flex align-items-center"
+            
+                      <!-- Botón Marcar como visto / Etiqueta -->
+                      <button
+                        *ngIf="!rep.visto"
+                        class="btn btn-sm btn-outline-success"
+                        (click)="marcarComoVisto(rep.id)"
+                        title="Marcar como visto"
                       >
-                        <ng-container *ngIf="rep.publicacion.negocio.logo_url; else letraNegocio">
-                          <img
-                            [src]="rep.publicacion.negocio.logo_url"
-                            class="rounded-circle me-2"
-                            width="32"
-                            height="32"
-                            alt="Logo"
-                            style="object-fit: cover;"
-                          >
-                        </ng-container>
-                        <ng-template #letraNegocio>
-                          <div
-                            class="rounded-circle bg-light text-muted text-uppercase d-flex justify-content-center align-items-center me-2"
-                            style="width:32px; height:32px;"
-                          >
-                            {{ rep.publicacion.negocio.nombre[0] }}
-                          </div>
-                        </ng-template>
-                        {{ rep.publicacion.negocio.nombre }}
-                      </a>
-                    </td>
-              
-                    <!-- Dueño del negocio -->
-                    <td>
-                      <a
-                        href="javascript:void(0);"
-                        (click)="verDetalle(rep.publicacion.negocio.user, 'usuario')"
-                        class="text-decoration-none d-flex align-items-center"
-                      >
-                        <ng-container *ngIf="rep.publicacion.negocio.user.foto_perfil; else letraDueno">
-                          <img
-                            [src]="rep.publicacion.negocio.user.foto_perfil"
-                            class="rounded-circle me-2"
-                            width="32"
-                            height="32"
-                            alt="Foto"
-                            style="object-fit: cover;"
-                          >
-                        </ng-container>
-                        <ng-template #letraDueno>
-                          <div
-                            class="rounded-circle bg-light text-muted text-uppercase d-flex justify-content-center align-items-center me-2"
-                            style="width:32px; height:32px;"
-                          >
-                            {{ rep.publicacion.negocio.user.name[0] }}
-                          </div>
-                        </ng-template>
-                        {{ rep.publicacion.negocio.user.name }}
-                      </a>
-                    </td>
-              
-                    <!-- Acciones -->
-                    <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <!-- Botón Ver publicación -->
-                        <button
-                          class="btn btn-sm btn-outline-primary"
-                          (click)="verDetalle(rep.publicacion, 'publicacion')"
-                          title="Ver publicación"
-                        >
-                          <i class="fa-solid fa-file-lines"></i>
-                        </button>
-              
-                        <!-- Botón Marcar como visto / Etiqueta -->
-                        <button
-                          *ngIf="!rep.visto"
-                          class="btn btn-sm btn-outline-success"
-                          (click)="marcarComoVisto(rep.id)"
-                          title="Marcar como visto"
-                        >
-                          <i class="fa-solid fa-check"></i>
-                        </button>
-              
-                        <span *ngIf="rep.visto" class="badge bg-success" title="Ya visto">
-                          <i class="fa-solid fa-eye"></i>
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                        <i class="fa-solid fa-check"></i>
+                      </button>
+            
+                      <span *ngIf="rep.visto" class="badge bg-success" title="Ya visto">
+                        <i class="fa-solid fa-eye"></i>
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            
               
           </div>
   
@@ -203,100 +212,120 @@
   
         <!-- Negocio -->
         <div class="card-body text-center" *ngIf="tipoDetalle === 'negocio'">
-<!-- Logo del negocio -->
-<ng-container *ngIf="detalle.logo_url; else letraNeg">
-    <div class="d-flex justify-content-center mb-3">
-      <img [src]="detalle.logo_url"
-           alt="Logo negocio"
-           style="width: 120px; height: 120px; object-fit: cover;"
-           class="rounded-circle border" />
-    </div>
-  </ng-container>
-  
-  <!-- Inicial del negocio si no tiene logo -->
-  <ng-template #letraNeg>
-    <div class="rounded-circle bg-light text-muted d-flex justify-content-center align-items-center mx-auto mb-3 border"
-         style="width: 120px; height: 120px; font-size: 32px;">
-      {{ detalle.nombre[0] }}
-    </div>
-  </ng-template>
-  
-  <!-- Nombre del negocio -->
-  <h5 class="text-center">{{ detalle.nombre }}</h5>
-  
-  <!-- Dueño del negocio -->
-  <p class="text-muted text-center mb-1">
-    <strong>Dueño:</strong> {{ detalle.user.name }}
-  </p>
-  
-  <!-- Descripción del negocio -->
-  <p class="text-muted text-center">
-    <strong>Descripción:</strong> {{ detalle.descripcion || 'Sin descripción' }}
-  </p>
-  
-  
-<!-- Contacto del negocio -->
-<div class="card mt-3 text-start">
-    <div class="card-body p-2" style="max-height: 250px; overflow-y: auto;">
-      <h5 class="card-title mb-3">Contacto del negocio</h5>
-      <table class="table table-borderless mb-0">
-        <tbody>
-          <!-- Correos -->
-          <tr *ngFor="let correo of detalle.correos">
-            <th class="ps-0" style="width: 110px;">
-              <i class="fa-solid fa-envelope me-2"></i>Correo:
-            </th>
-            <td class="text-muted">{{ correo.correo }}</td>
-          </tr>
-  
-          <!-- Teléfonos -->
-          <tr *ngFor="let tel of detalle.telefonos">
-            <th class="ps-0" style="width: 110px;">
-              <i class="fa-solid fa-phone me-2"></i>Teléfono:
-            </th>
-            <td class="text-muted">{{ tel.telefono }}</td>
-          </tr>
-  
-          <!-- Redes Sociales (todas en una línea) -->
-          <tr *ngIf="detalle.redes_sociales.length > 0">
-            <th class="ps-0" style="width: 110px;">
-              <i class="fa-solid fa-share-nodes me-2"></i>Redes:
-            </th>
-            <td class="text-muted">
-              <div class="d-flex flex-wrap align-items-center" style="gap: 1rem;">
-                <ng-container *ngFor="let red of detalle.redes_sociales">
-                  <a
-                    [href]="getRedSocialUrl(red)"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-decoration-none"
-                  >
-                    <i
-                      class="fa-brands fs-4"
-                      [ngClass]="{
-                        'fa-facebook-f': red.tipo.toLowerCase() === 'facebook',
-                        'fa-instagram': red.tipo.toLowerCase() === 'instagram',
-                        'fa-tiktok': red.tipo.toLowerCase() === 'tiktok',
-                        'fa-whatsapp': red.tipo.toLowerCase() === 'whatsapp'
-                      }"
-                      [ngStyle]="{
-                        'color': red.tipo.toLowerCase() === 'facebook' ? '#027cd9' :
-                                 red.tipo.toLowerCase() === 'instagram' ? '#ec3697' :
-                                 red.tipo.toLowerCase() === 'tiktok' ? '#000000' :
-                                 red.tipo.toLowerCase() === 'whatsapp' ? '#009e03' : ''
-                      }"
-                    ></i>
-                  </a>
-                </ng-container>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  
+          <!-- Logo del negocio -->
+          <ng-container *ngIf="detalle.logo_url; else letraNeg">
+            <div class="d-flex justify-content-center mb-3">
+              <img [src]="detalle.logo_url"
+                   alt="Logo negocio"
+                   style="width: 120px; height: 120px; object-fit: cover;"
+                   class="rounded-circle border" />
+            </div>
+          </ng-container>
+        
+          <!-- Inicial del negocio si no tiene logo -->
+          <ng-template #letraNeg>
+            <div class="rounded-circle bg-light text-muted d-flex justify-content-center align-items-center mx-auto mb-3 border"
+                 style="width: 120px; height: 120px; font-size: 32px;">
+              {{ detalle.nombre[0] }}
+            </div>
+          </ng-template>
+        
+          <!-- Nombre del negocio -->
+          <h5 class="text-center">{{ detalle.nombre }}</h5>
+        
+          <!-- Dueño del negocio con enlace a perfil -->
+          <p class="text-muted text-center mb-1 d-flex justify-content-center align-items-center gap-2">
+            <strong>Dueño:</strong> 
+            <a [routerLink]="['/perfil', detalle.user.id]" class="text-decoration-none d-flex align-items-center ms-2">
+              <ng-container *ngIf="detalle.user.foto_perfil; else letraDueno">
+                <img 
+                  [src]="detalle.user.foto_perfil" 
+                  alt="Foto dueño"
+                  class="rounded-circle me-2"
+                  width="32"
+                  height="32"
+                  style="object-fit: cover; cursor: pointer;"
+                />
+              </ng-container>
+              <ng-template #letraDueno>
+                <div
+                  class="rounded-circle bg-light text-muted text-uppercase d-flex justify-content-center align-items-center me-2"
+                  style="width:32px; height:32px; cursor:pointer;"
+                >
+                  {{ detalle.user.name[0] }}
+                </div>
+              </ng-template>
+              <span style="cursor:pointer;">{{ detalle.user.name }}</span>
+            </a>
+          </p>
+        
+          <!-- Descripción del negocio -->
+          <p class="text-muted text-center">
+            <strong>Descripción:</strong> {{ detalle.descripcion || 'Sin descripción' }}
+          </p>
+        
+          <!-- Contacto del negocio -->
+          <div class="card mt-3 text-start">
+            <div class="card-body p-2" style="max-height: 250px; overflow-y: auto;">
+              <h5 class="card-title mb-3">Contacto del negocio</h5>
+              <table class="table table-borderless mb-0">
+                <tbody>
+                  <!-- Correos -->
+                  <tr *ngFor="let correo of detalle.correos">
+                    <th class="ps-0" style="width: 110px;">
+                      <i class="fa-solid fa-envelope me-2"></i>Correo:
+                    </th>
+                    <td class="text-muted">{{ correo.correo }}</td>
+                  </tr>
+        
+                  <!-- Teléfonos -->
+                  <tr *ngFor="let tel of detalle.telefonos">
+                    <th class="ps-0" style="width: 110px;">
+                      <i class="fa-solid fa-phone me-2"></i>Teléfono:
+                    </th>
+                    <td class="text-muted">{{ tel.telefono }}</td>
+                  </tr>
+        
+                  <!-- Redes Sociales (todas en una línea) -->
+                  <tr *ngIf="detalle.redes_sociales.length > 0">
+                    <th class="ps-0" style="width: 110px;">
+                      <i class="fa-solid fa-share-nodes me-2"></i>Redes:
+                    </th>
+                    <td class="text-muted">
+                      <div class="d-flex flex-wrap align-items-center" style="gap: 1rem;">
+                        <ng-container *ngFor="let red of detalle.redes_sociales">
+                          <a
+                            [href]="getRedSocialUrl(red)"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-decoration-none"
+                          >
+                            <i
+                              class="fa-brands fs-4"
+                              [ngClass]="{
+                                'fa-facebook-f': red.tipo.toLowerCase() === 'facebook',
+                                'fa-instagram': red.tipo.toLowerCase() === 'instagram',
+                                'fa-tiktok': red.tipo.toLowerCase() === 'tiktok',
+                                'fa-whatsapp': red.tipo.toLowerCase() === 'whatsapp'
+                              }"
+                              [ngStyle]="{
+                                'color': red.tipo.toLowerCase() === 'facebook' ? '#027cd9' :
+                                         red.tipo.toLowerCase() === 'instagram' ? '#ec3697' :
+                                         red.tipo.toLowerCase() === 'tiktok' ? '#000000' :
+                                         red.tipo.toLowerCase() === 'whatsapp' ? '#009e03' : ''
+                              }"
+                            ></i>
+                          </a>
+                        </ng-container>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
+        
   
         <!-- Publicación -->
 <!-- Publicación -->

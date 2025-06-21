@@ -421,14 +421,35 @@ class NegocioController extends Controller
 
     $publicaciones = Publicacion::with([
         'imagenes',
-        'negocio:id,nombre,logo_url'
+        'negocio:id,nombre,logo_url',
+        'usuario:id,name,foto_perfil' // 👈 AÑADIDO
+
     ])
     ->orderByDesc('created_at')
-    ->paginate($cantidad);
+    ->paginate($cantidad); 
 
     return response()->json($publicaciones);
 
 }
+
+public function NegociosGenerales(Request $request)
+{
+    $cantidad = $request->input('cantidad', 10);
+    $negocios = Negocio::select('id', 'nombre', 'logo_url')
+        ->orderByDesc('created_at')
+        ->paginate($cantidad);
+    return response()->json($negocios);
+}
+
+public function UsuariosGenerales(Request $request)
+{
+    $cantidad = $request->input('cantidad', 10);
+    $usuarios = User::select('id', 'name', 'foto_perfil')
+        ->orderByDesc('created_at')
+        ->paginate($cantidad);
+    return response()->json($usuarios);
+}
+
 
 
 
@@ -456,11 +477,11 @@ public function SubirReporte(Request $request)
 public function VerReportes(Request $request)
 {
     $reportes = ReportePublicacion::with([
-        'usuario:id,name,email,foto_perfil,created_at',
-        'publicacion:id,descripcion,negocio_id,pdf',
+        'usuario:id,name,email,foto_perfil,created_at',             // Usuario que reporta
+        'publicacion:id,descripcion,negocio_id,pdf,user_id',        // Publicación (añadí user_id)
+        'publicacion.usuario:id,name,email,foto_perfil',             // Usuario dueño de la publicación
         'publicacion.imagenes:id,publicacion_id,imagen', 
         'publicacion.negocio:id,nombre,logo_url,user_id,descripcion',
-        'publicacion.negocio:id,nombre,logo_url,user_id',
         'publicacion.negocio.user:id,name,email,foto_perfil,created_at',
         'publicacion.negocio.correos:id,negocio_id,correo',
         'publicacion.negocio.telefonos:id,negocio_id,telefono',
@@ -471,6 +492,7 @@ public function VerReportes(Request $request)
 }
 
 
+
 public function marcarVisto($id)
 {
     $reporte = ReportePublicacion::findOrFail($id);
@@ -478,6 +500,67 @@ public function marcarVisto($id)
     $reporte->save();
 
     return response()->json(['message' => 'Reporte marcado como visto.']);
+}
+
+
+
+public function storePublicacionUsuario(Request $request)
+{
+    \Log::info('🟢 Guardando publicación de usuario', ['input' => $request->all(), 'files' => $request->allFiles()]);
+
+    try {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'descripcion' => 'nullable|string',
+            'pdf' => 'nullable|file|mimes:pdf',
+            'imagenes.*' => 'nullable|image|max:5120'
+        ]);
+
+        $usuario = User::findOrFail($request->user_id);
+        $correo = $usuario->email ?? null;
+
+        if (!$correo) {
+            return response()->json(['error' => 'Usuario no válido'], 422);
+        }
+
+        $carpeta = "aplicacion_a_medida/{$correo}/Publicaciones_sin_negocio";
+        $cloudinary = new \Cloudinary\Cloudinary(config('cloudinary.cloud'));
+
+        $pdfUrl = null;
+        if ($request->hasFile('pdf')) {
+            $upload = $cloudinary->uploadApi()->upload($request->file('pdf')->getRealPath(), [
+                'folder' => $carpeta,
+                'resource_type' => 'raw'
+            ]);
+            $pdfUrl = $upload['secure_url'] ?? null;
+        }
+
+        $publicacion = Publicacion::create([
+            'user_id' => $usuario->id,
+            'descripcion' => $request->descripcion,
+            'pdf' => $pdfUrl,
+            'destacado' => false
+        ]);
+
+        if ($request->hasFile('imagenes')) {
+            foreach ($request->file('imagenes') as $img) {
+                $upload = $cloudinary->uploadApi()->upload($img->getRealPath(), [
+                    'folder' => $carpeta,
+                    'resource_type' => 'image'
+                ]);
+
+                ImagenPublicacion::create([
+                    'publicacion_id' => $publicacion->id,
+                    'imagen' => $upload['secure_url'] ?? null
+                ]);
+            }
+        }
+
+        return response()->json(['mensaje' => 'Publicación guardada correctamente'], 201);
+    } catch (\Exception $e) {
+        \Log::error('Error guardando publicación usuario: ' . $e->getMessage());
+        return response()->json(['error' => 'Error interno del servidor'], 500);
+    }
 }
 
 

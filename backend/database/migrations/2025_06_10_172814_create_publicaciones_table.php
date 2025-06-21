@@ -9,11 +9,12 @@ return new class extends Migration {
     {
         Schema::create('publicaciones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('negocio_id')->constrained('negocios')->onDelete('cascade');
+            $table->foreignId('negocio_id')->nullable()->constrained('negocios')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->text('descripcion');
             $table->string('pdf')->nullable();
-            $table->boolean('destacado')->default(false); // Campo sí/no
-            $table->unsignedInteger('orden')->nullable(); // Solo se usará si está destacado
+            $table->boolean('destacado')->default(false);
+            $table->unsignedInteger('orden')->nullable();
             $table->timestamps();
         });
     }
@@ -23,5 +24,6 @@ return new class extends Migration {
         Schema::dropIfExists('publicaciones');
     }
 };
+
 
 

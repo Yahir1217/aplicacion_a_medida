@@ -9,20 +9,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Publicacion extends Model
 {
     use HasFactory;
+
     protected $table = 'publicaciones';
 
     protected $fillable = [
         'negocio_id',
+        'user_id', // agregado aquí
         'descripcion',
         'pdf',
         'destacado',
         'orden'
     ];
-    
 
     public function negocio(): BelongsTo
     {
         return $this->belongsTo(Negocio::class);
+    }
+
+    public function usuario(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function imagenes()
@@ -39,6 +45,4 @@ class Publicacion extends Model
     {
         return $this->hasMany(ReportePublicacion::class, 'publicacion_id');
     }
-
-
 }

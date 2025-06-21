@@ -41,12 +41,24 @@ export class PublicacionesReportadasComponent implements OnInit {
   }
 
   actualizarFiltro(): void {
+    if (!this.reportes?.data) {
+      this.reportesFiltrados = [];
+      return;
+    }
+  
     const texto = this.filter.toLowerCase();
-    this.reportesFiltrados = this.reportes.data.filter((rep: any) =>
-      rep.usuario.name.toLowerCase().includes(texto) ||
-      rep.publicacion.descripcion.toLowerCase().includes(texto) ||
-      rep.publicacion.negocio.nombre.toLowerCase().includes(texto)
-    );
+  
+    this.reportesFiltrados = this.reportes.data.filter((rep: any) => {
+      const nombreUsuario = rep.usuario?.name?.toLowerCase() || '';
+      const descripcionPub = rep.publicacion?.descripcion?.toLowerCase() || '';
+      const nombreNegocio = rep.publicacion?.negocio?.nombre?.toLowerCase() || '';
+  
+      return (
+        nombreUsuario.includes(texto) ||
+        descripcionPub.includes(texto) ||
+        nombreNegocio.includes(texto)
+      );
+    });
   }
 
   verDetalle(data: any, tipo: 'usuario' | 'negocio' | 'publicacion' | 'comentario') {
