@@ -89,7 +89,7 @@ class NegocioController extends Controller
         return response()->json($negocio);
     }
 
-    public function verDetalle($id)
+    public function NegocioCompleto($id)
     {
         $negocio = Negocio::with([
             'user:id,name', // Solo trae el nombre del usuario
@@ -109,7 +109,7 @@ class NegocioController extends Controller
         return response()->json($negocio);
     }
 
-    public function actualizar(Request $request, $id)
+    public function ActualizarNegocioCompleto(Request $request, $id)
     {
         \Log::info('🟡 Inicio función actualizar negocio', ['id' => $id]);
     
@@ -240,7 +240,7 @@ class NegocioController extends Controller
 
 
 
-    public function storePublicacion(Request $request)
+    public function actualizarPublicacion(Request $request)
     {
         \Log::info('🟡 Guardando publicación - inicio', ['input' => $request->all(), 'files' => $request->allFiles()]);
     
@@ -504,7 +504,7 @@ public function marcarVisto($id)
 
 
 
-public function storePublicacionUsuario(Request $request)
+public function GuardarPublicacionUsuario(Request $request)
 {
     \Log::info('🟢 Guardando publicación de usuario', ['input' => $request->all(), 'files' => $request->allFiles()]);
 
@@ -562,6 +562,21 @@ public function storePublicacionUsuario(Request $request)
         return response()->json(['error' => 'Error interno del servidor'], 500);
     }
 }
+
+
+public function obtenerMiNegocios(Request $request)
+{
+    $user_id = $request->input('user_id'); // <- se recibe desde query ?user_id=
+
+    $negocios = Negocio::where('user_id', $user_id)
+        ->select('id', 'nombre', 'logo_url', 'estado', 'fecha_pago', 'fecha_vencimiento')
+        ->get();
+
+    return response()->json($negocios);
+}
+
+
+
 
 
 

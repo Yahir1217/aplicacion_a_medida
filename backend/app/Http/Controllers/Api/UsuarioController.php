@@ -138,7 +138,7 @@ class UsuarioController extends Controller
     } 
 
 
-    public function actualizar(Request $request, $id)
+    public function actualizarPerfil(Request $request, $id)
     {
         \Log::info('Inicio función actualizar', ['id' => $id]);
     

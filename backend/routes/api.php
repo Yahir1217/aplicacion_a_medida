@@ -55,18 +55,18 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/negocios/{id}', [NegocioController::class, 'destroy']);
 
     //Rutas la vista del negocio
-    Route::get('/negocios/{id}', [NegocioController::class, 'verDetalle']);
-    Route::post('/negocios/{id}', [NegocioController::class, 'actualizar']);
+    Route::get('/negocios/{id}', [NegocioController::class, 'NegocioCompleto']);
+    Route::post('/negocios/{id}', [NegocioController::class, 'ActualizarNegocioCompleto']);
     Route::post('/negocios/{id}/actualizar-contacto', [NegocioController::class, 'actualizarContacto']);
     Route::put('/negocios/{id}/horarios', [NegocioController::class, 'actualizarHorarios']);
-    Route::post('/publicaciones', [NegocioController::class, 'storePublicacion']);
+    Route::post('/publicaciones', [NegocioController::class, 'actualizarPublicacion']);
     Route::delete('/publicaciones/{id}', [NegocioController::class, 'eliminarPublicacion']);
     Route::put('/publicaciones/{id}/destacar', [NegocioController::class, 'toggleDestacado']);
     Route::put('/publicaciones/destacadas/orden', [NegocioController::class, 'actualizarOrdenDestacadas']);
 
 
     Route::get('/usuario/perfil/{id}', [UsuarioController::class, 'obtenerPerfil']);
-    Route::post('/usuarios/{id}/actualizar', [UsuarioController::class, 'actualizar']);
+    Route::post('/usuarios/{id}/actualizar', [UsuarioController::class, 'actualizarPerfil']);
     Route::post('/enviar-codigo-verificacion/{id}', [UsuarioController::class, 'enviarCodigoVerificacion']);
     Route::post('/verificar-codigo-email', [UsuarioController::class, 'verificarCodigoEmail']);
  
@@ -76,11 +76,14 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/usuarios_generales', [NegocioController::class, 'UsuariosGenerales']);
 
     Route::post('/reportes', [NegocioController::class, 'SubirReporte']);
-    Route::post('/publicaciones/usuario', [NegocioController::class, 'storePublicacionUsuario']);
+    Route::post('/publicaciones/usuario', [NegocioController::class, 'GuardarPublicacionUsuario']);
 
     ///ADMINISTRADOR
     Route::get('/reportes-publicaciones', [NegocioController::class, 'VerReportes']);
     Route::post('/reportes/{id}/marcar-visto', [NegocioController::class, 'marcarVisto']);
+
+    ///EMPRENDEDOR
+    Route::get('/mi-negocio', [NegocioController::class, 'obtenerMiNegocios']);
 
 
 

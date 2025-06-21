@@ -313,6 +313,14 @@ guardarPublicacionUsuario(data: FormData) {
   });
 }
 
+getMiNegocio(): Observable<any> {
+  const user_id = sessionStorage.getItem('user_id');
+  const headers = this.getAuthHeaders();
+  return this.http.get<any>(`${this.apiUrl}/mi-negocio?user_id=${user_id}`, { headers });
+}
+
+
+
     
     
     

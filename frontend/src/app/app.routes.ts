@@ -56,6 +56,12 @@ export const routes: Routes = [
     canActivate: [AuthGuard], // <- y aquí también
     loadComponent: () =>
       import('./componentes/administrador/publicaciones-reportadas/publicaciones-reportadas.component').then(m => m.PublicacionesReportadasComponent),
+  },
+  {
+    path: 'mis-negocios',
+    canActivate: [AuthGuard], // <- y aquí también
+    loadComponent: () =>
+      import('./componentes/emprendedor/mi-negocio/mi-negocio.component').then(m => m.MiNegocioComponent),
   }
   
   
