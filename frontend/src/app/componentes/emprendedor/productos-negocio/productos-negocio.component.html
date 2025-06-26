@@ -1,0 +1,387 @@
+    <div>
+      <div class="card">
+        <!-- Header con búsqueda y botón -->
+        <div class="card-header border-0">
+          <div class="row g-4">
+            <div class="col-sm-auto">
+                <div>
+                    <button
+                    class="btn btn-success"
+                    (click)="abrirModalProducto()"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editarProductoModal"
+                  >
+                    <i class="ri-add-line align-bottom me-1"></i> Agregar Producto
+                  </button>
+                  
+                  </div>
+            </div>
+            <div class="col-sm">
+              <div class="d-flex justify-content-sm-end">
+                <div class="search-box ms-2">
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="busqueda"
+                    placeholder="Buscar productos..."
+                  />
+                  <i class="ri-search-line search-icon"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Tabs -->
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col">
+              <ul
+                class="nav nav-tabs-custom card-header-tabs border-bottom-0"
+                role="tablist"
+              >
+                <li class="nav-item">
+                  <a
+                    class="nav-link fw-semibold"
+                    [class.active]="filtroPublicado === 'todos'"
+                    (click)="aplicarFiltroPublicado('todos')"
+                    role="tab"
+                  >
+                    Todos
+                    <span
+                      class="badge bg-danger-subtle text-danger align-middle rounded-pill ms-1"
+                    >
+                      {{ totalProductos }}
+                    </span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link fw-semibold"
+                    [class.active]="filtroPublicado === 'si'"
+                    (click)="aplicarFiltroPublicado('si')"
+                    role="tab"
+                  >
+                    Publicados
+                    <span
+                      class="badge bg-danger-subtle text-danger align-middle rounded-pill ms-1"
+                    >
+                      {{ publicados }}
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Tabla -->
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">Foto</th>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Publicado</th>
+                  <th class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let producto of productosPaginados; let i = index">
+                    <td>
+                        <img
+                          [src]="producto.foto || 'assets/img/default-product.png'"
+                          alt="{{ producto.nombre }}"
+                          class="thumb-image"
+                          (mouseenter)="abrirImagenGrande(producto.foto)"
+                          (mouseleave)="cerrarImagenGrande()"
+                          style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; cursor: pointer;"
+                        />
+                      </td>
+                      
+                  <td>{{ producto.nombre }}</td>
+                  <td class="text-truncate" style="max-width: 200px;">
+                    {{ producto.descripcion.split(' ').slice(0, 5).join(' ') }}...
+                  </td>
+                  <td>{{ producto.precio | currency }}</td>
+                  <td>{{ producto.stock }}</td>
+                  <td>
+                    <span
+                      class="badge fw-semibold px-3 py-2"
+                      [ngClass]="{
+                        'bg-success-subtle text-success border border-success': producto.publicado === 'si',
+                        'bg-secondary-subtle text-secondary border border-secondary': producto.publicado !== 'si'
+                      }"
+                      style="min-width: 120px; display: inline-block; text-align: center;"
+                    >
+                      {{ producto.publicado === 'si' ? 'Publicado' : 'No publicado' }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <button
+  class="btn btn-icon btn-sm btn-soft-primary rounded-circle menu-button-custom"
+  (click)="toggleMenu(i, $event)"
+>
+
+                    <i class="ri-more-fill"></i>
+                  </button>
+                  
+                  </td>
+                </tr>
+                <tr *ngIf="productosFiltrados.length === 0">
+                  <td colspan="7" class="text-center">No hay productos disponibles</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+  
+          <!-- Info de página actual -->
+          <div class="d-flex justify-content-center align-items-center mb-2">
+            <small class="text-muted">
+              Página {{ currentPage }} de {{ totalPages }} &nbsp;&nbsp;|&nbsp;&nbsp;
+              Total de productos filtrados: {{ productosFiltrados.length }}
+            </small>
+          </div>
+  
+          <!-- Paginación -->
+          <div class="d-flex justify-content-center">
+            <nav>
+              <ul class="pagination mb-0">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <button class="page-link" (click)="cambiarPagina(currentPage - 1)">
+                    Anterior
+                  </button>
+                </li>
+  
+                <li
+                  class="page-item"
+                  *ngFor="let page of [].constructor(totalPages); let i = index"
+                  [class.active]="currentPage === i + 1"
+                >
+                  <button class="page-link" (click)="cambiarPagina(i + 1)">
+                    {{ i + 1 }}
+                  </button>
+                </li>
+  
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                  <button class="page-link" (click)="cambiarPagina(currentPage + 1)">
+                    Siguiente
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Dropdown de acciones fuera de la tabla -->
+<!-- Dropdown de acciones fuera de la tabla -->
+<div
+  *ngIf="menuIndex !== -1"
+  class="position-fixed bg-white shadow rounded border dropdown-menu-custom"
+  [ngStyle]="{
+    top: menuTop + 'px',
+    left: menuLeft + 'px',
+    width: '180px',
+    zIndex: 1050
+  }"
+>
+  <ul class="list-unstyled mb-0 py-2">
+    <ng-container *ngIf="filtroPublicado === 'todos'">
+      <li>
+        <button
+        class="dropdown-item py-2 px-3"
+        (click)="abrirModalProducto(productosPaginados[menuIndex])"
+        data-bs-toggle="modal"
+        data-bs-target="#editarProductoModal"
+      >
+        <i class="ri-edit-2-line me-2"></i> Editar
+      </button>
+      
+      </li>
+      <li>
+        <button
+        class="dropdown-item py-2 px-3"
+        (click)="confirmarEliminacion(productosPaginados[menuIndex])"
+      >
+        <i class="ri-delete-bin-line me-2"></i> Eliminar
+      </button>
+      
+      </li>
+      <li>
+        <a class="dropdown-item py-2 px-3" href="#">
+          <i class="ri-eye-line me-2"></i> Ver
+        </a>
+      </li>
+      <li *ngIf="productosPaginados[menuIndex]?.publicado !== 'si'">
+        <button class="dropdown-item py-2 px-3" (click)="confirmarPublicacion(productosPaginados[menuIndex])">
+          <i class="ri-upload-cloud-line me-2"></i> Publicar
+        </button>
+      </li>
+      <li *ngIf="productosPaginados[menuIndex]?.publicado !== 'no'">
+        <button
+        class="dropdown-item py-2 px-3"
+        (click)="confirmarDespublicacion(productosPaginados[menuIndex])"
+      >
+        <i class="ri-download-cloud-line me-2"></i> Despublicar
+      </button>
+      
+      </li>
+      
+    </ng-container>
+    <ng-container *ngIf="filtroPublicado === 'si'">
+      <li>
+        <a class="dropdown-item py-2 px-3" href="#">
+          <i class="ri-eye-line me-2"></i> Ver
+        </a>
+      </li>
+      <li>
+        <button
+        class="dropdown-item py-2 px-3"
+        (click)="confirmarDespublicacion(productosPaginados[menuIndex])"
+      >
+        <i class="ri-download-cloud-line me-2"></i> Despublicar
+      </button>
+      
+      </li>
+    </ng-container>
+  </ul>
+</div>
+
+    </div>
+
+
+
+  <!-- Imagen grande flotante fuera de la tabla -->
+<div
+*ngIf="imagenGrandeUrl"
+(click)="cerrarImagenGrande()"
+class="imagen-grande-overlay"
+>
+<img [src]="imagenGrandeUrl" alt="Imagen grande" class="imagen-grande" />
+</div>
+
+  
+
+
+<!-- Modal Editar Producto -->
+<div class="modal fade" id="editarProductoModal" tabindex="-1" aria-labelledby="editarProductoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form (ngSubmit)="guardarProducto()" #formProducto="ngForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editarProductoModalLabel">
+              {{ productoSeleccionado?.id ? 'Editar' : 'Agregar' }} Producto
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+  
+          <div class="modal-body d-flex flex-row gap-4">
+            <!-- Inputs a la izquierda -->
+            <div class="flex-fill">
+              <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <input
+                  type="text"
+                  [(ngModel)]="productoSeleccionado.nombre"
+                  name="nombre"
+                  class="form-control"
+                  required
+                />
+              </div>
+  
+              <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <textarea
+                  [(ngModel)]="productoSeleccionado.descripcion"
+                  name="descripcion"
+                  class="form-control"
+                ></textarea>
+              </div>
+  
+              <div class="mb-3">
+                <label class="form-label">Precio</label>
+                <input
+                  type="number"
+                  [(ngModel)]="productoSeleccionado.precio"
+                  name="precio"
+                  class="form-control"
+                  required
+                  step="0.01"
+                />
+              </div>
+  
+              <div class="mb-3">
+                <label class="form-label">Stock</label>
+                <input
+                  type="number"
+                  [(ngModel)]="productoSeleccionado.stock"
+                  name="stock"
+                  class="form-control"
+                  required
+                />
+              </div>
+  
+              <div class="mb-3">
+                <label class="form-label">Foto del producto</label>
+                <input
+                  type="file"
+                  class="form-control"
+                  accept="image/*"
+                  (change)="onFileSelected($event)"
+                />
+                <small class="form-text text-muted">
+                  Puedes dejarlo en blanco si no deseas cambiar la imagen.
+                </small>
+              </div>
+            </div>
+  
+            <!-- Imagen a la derecha -->
+            <div
+              class="d-flex flex-column align-items-center justify-content-start"
+              style="min-width: 220px;"
+            >
+              <!-- Imagen actual -->
+              <div *ngIf="productoSeleccionado.foto" class="mb-2 w-100 text-center">
+                <label class="form-label">Imagen actual</label>
+                <img
+                  [src]="productoSeleccionado.foto"
+                  alt="Foto producto actual"
+                  class="img-fluid rounded border"
+                  style="max-height: 220px; object-fit: contain; width: 100%;"
+                />
+              </div>
+  
+              <!-- Nueva imagen preview -->
+              <div *ngIf="fotoProductoFile" class="mb-2 w-100 text-center">
+                <label class="form-label">Nueva imagen</label>
+                <img
+                  [src]="getObjectURL(fotoProductoFile)"
+                  alt="Nueva foto producto"
+                  class="img-fluid rounded border"
+                  style="max-height: 220px; object-fit: contain; width: 100%;"
+                />
+              </div>
+  
+              <small class="text-muted text-center">Vista previa de la imagen</small>
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="formProducto.invalid"
+            >
+              Guardar cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  

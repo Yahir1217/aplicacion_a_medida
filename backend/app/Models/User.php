@@ -15,8 +15,10 @@ class User extends Authenticatable implements JWTSubject
     protected $fillable = [
         'name',
         'email',
+        'telefono',
         'password',
         'foto_perfil',
+        'visible',
     ];
 
     protected $hidden = [
@@ -58,6 +60,21 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Publicacion::class);
     }
+    public function carrito()
+    {
+        return $this->hasMany(CarritoProducto::class);
+    }
+    public function stripeCustomer()
+    {
+        return $this->morphOne(StripeCustomer::class, 'stripeCustomerable');
+    }
+    public function direcciones()
+    {
+        return $this->hasMany(Direccion::class);
+    }
+
+    
+
 
 
 

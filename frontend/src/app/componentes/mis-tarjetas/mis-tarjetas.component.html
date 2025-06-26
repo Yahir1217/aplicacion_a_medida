@@ -1,0 +1,147 @@
+<div class="row gx-4">
+  <!-- Columna izquierda: botones y negocios -->
+  <div class="col-xxl-9">
+    <div class="card p-4">
+      <h2 class="text-xl font-bold mb-4">Mis Tarjetas</h2>
+
+      <!-- Botones de Cliente -->
+      <div class="mb-4 d-flex flex-wrap gap-2">
+        <button (click)="abrirModalCliente()" class="btn btn-primary">
+          Agregar Tarjeta Cliente
+        </button>
+        <button (click)="verTarjetasCliente()" class="btn btn-outline-secondary">
+          Ver Mis Tarjetas
+        </button>
+      </div>
+
+      <!-- Tarjetas por Negocio -->
+      <div>
+        <h3 class="text-lg font-semibold mb-3">Tarjetas de Mis Negocios</h3>
+        <div *ngIf="negocios.length > 0; else sinNegocios">
+          <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+            <div *ngFor="let negocio of negocios" class="col">
+              <div class="card p-3 rounded shadow-sm text-center">
+                <!-- Foto circular del negocio -->
+                <img
+                  *ngIf="negocio.logo_url"
+                  [src]="negocio.logo_url"
+                  alt="{{ negocio.nombre }}"
+                  class="negocio-logo mb-3"
+                />
+
+                <!-- Nombre -->
+                <h4 class="mb-3">{{ negocio.nombre }}</h4>
+
+                <!-- Botones -->
+                <button (click)="abrirModalNegocio(negocio)" class="btn btn-primary w-100 mt-2">
+                  Agregar Tarjeta
+                </button>
+                <button (click)="verTarjetas(negocio)" class="btn btn-outline-secondary w-100 mt-2">
+                  Ver Tarjetas
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #sinNegocios>
+          <p class="text-muted fst-italic">No tienes negocios registrados.</p>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+<!-- Columna derecha -->
+<div class="col-xxl-3">
+  <div class="card p-4" style="max-height: 80vh; overflow-y: auto;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="mb-0">Tarjetas</h3>
+      <button *ngIf="negocioSeleccionado || mostrarTarjetasCliente" (click)="negocioSeleccionado = null; mostrarTarjetasCliente = false" class="btn btn-sm btn-light">
+        Limpiar
+      </button>
+    </div>
+
+    <!-- Mostrar tarjetas del cliente -->
+    <ng-container *ngIf="mostrarTarjetasCliente; else mostrarTarjetasNegocio">
+      <div *ngIf="tarjetasCliente.length > 0; else sinTarjetasCliente">
+        <div *ngFor="let tarjeta of tarjetasCliente" class="mb-4 p-3 border rounded shadow-sm bg-white"
+          [ngClass]="{
+            'bg-visa': tarjeta.card?.brand?.toLowerCase() === 'visa',
+            'bg-mastercard': tarjeta.card?.brand?.toLowerCase() === 'mastercard'
+          }"
+        >
+          <div class="mb-2 fs-4">
+            <i *ngIf="tarjeta.card?.brand?.toLowerCase() === 'visa'" class="fa-brands fa-cc-visa"></i>
+            <i *ngIf="tarjeta.card?.brand?.toLowerCase() === 'mastercard'" class="fa-brands fa-cc-mastercard" style="color: #f79e1b;"></i>
+          </div>
+          <span class="number font-mono fs-5 d-block">**** **** **** {{ tarjeta.card?.last4 }}</span>
+          <div class="text-muted">Expira: {{ tarjeta.card?.exp_month }}/{{ tarjeta.card?.exp_year }}</div>
+          <div *ngIf="tarjeta.id === tarjeta.predeterminada" class="text-success fw-semibold">(Predeterminada)</div>
+        </div>
+      </div>
+      <ng-template #sinTarjetasCliente>
+        <p class="text-muted fst-italic">No tienes tarjetas registradas.</p>
+      </ng-template>
+    </ng-container>
+
+    <!-- Mostrar tarjetas del negocio -->
+    <ng-template #mostrarTarjetasNegocio>
+      <ng-container *ngIf="negocioSeleccionado; else sinSeleccion">
+        <ng-container *ngIf="negocioSeleccionado.tarjetas?.length > 0; else sinTarjetasNegocio">
+          <div *ngFor="let tarjeta of negocioSeleccionado.tarjetas" class="mb-4 p-3 border rounded shadow-sm bg-white"
+            [ngClass]="{
+              'bg-visa': tarjeta.card?.brand?.toLowerCase() === 'visa',
+              'bg-mastercard': tarjeta.card?.brand?.toLowerCase() === 'mastercard'
+            }"
+          >
+            <div class="mb-2 fs-4">
+              <i *ngIf="tarjeta.card?.brand?.toLowerCase() === 'visa'" class="fa-brands fa-cc-visa"></i>
+              <i *ngIf="tarjeta.card?.brand?.toLowerCase() === 'mastercard'" class="fa-brands fa-cc-mastercard" style="color: #f79e1b;"></i>
+            </div>
+            <span class="number font-mono fs-5 d-block">**** **** **** {{ tarjeta.card?.last4 }}</span>
+            <div class="text-muted">Expira: {{ tarjeta.card?.exp_month }}/{{ tarjeta.card?.exp_year }}</div>
+            <div *ngIf="tarjeta.id === tarjeta.predeterminada" class="text-success fw-semibold">(Predeterminada)</div>
+          </div>
+        </ng-container>
+
+        <ng-template #sinTarjetasNegocio>
+          <p class="text-muted fst-italic">Este negocio no tiene tarjetas registradas. Agrega una.</p>
+        </ng-template>
+      </ng-container>
+
+      <ng-template #sinSeleccion>
+        <p class="text-muted fst-italic">Selecciona un negocio para ver sus tarjetas.</p>
+      </ng-template>
+    </ng-template>
+  </div>
+</div>
+
+</div>
+
+
+
+
+
+
+<!-- Modal agregar tarjeta -->
+<div class="modal fade" tabindex="-1" #modalTarjetaRef aria-labelledby="modalTarjetaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form (ngSubmit)="registrarTarjeta($event)" #formTarjeta="ngForm" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTarjetaLabel">
+            {{ negocioSeleccionado ? 'Agregar tarjeta del negocio' : 'Agregar tarjeta del cliente' }}
+          </h5>
+          <button type="button" class="btn-close" (click)="cerrarModal()" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <label for="card-element" class="form-label">Detalles de la tarjeta</label>
+          <div id="card-element" class="p-3 border rounded"></div>
+          <div class="text-danger mt-2" *ngIf="cardErrors">{{ cardErrors }}</div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" [disabled]="!!cardErrors">Registrar tarjeta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

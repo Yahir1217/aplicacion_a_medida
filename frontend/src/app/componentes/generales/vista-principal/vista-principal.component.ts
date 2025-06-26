@@ -4,6 +4,7 @@ import { ApiService } from '../../../servicios/api.service';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
+import { jwtDecode } from 'jwt-decode'; // ✅ Importación correcta
 
 @Component({
   selector: 'app-vista-principal',
@@ -18,16 +19,13 @@ export class VistaPrincipalComponent implements OnInit {
   loading = false;
   lastPage = false;
 
-  // Para modal de imágenes
   modalAbierto = false;
   imagenesModal: string[] = [];
   imagenActual = 0;
 
-
   modalReporteAbierto = false;
   comentarioReporte = '';
   publicacionIdReporte: number = 0;
-
 
   mostrarModalUsuario = false;
   nuevaPublicacion = {
@@ -35,23 +33,20 @@ export class VistaPrincipalComponent implements OnInit {
     pdf: null as File | null
   };
 
-pdfSeleccionado: File | null = null;
-imagenesSeleccionadas: File[] = [];
-imagenesPreview: string[] = [];
-formPublicacion: FormGroup;
+  pdfSeleccionado: File | null = null;
+  imagenesSeleccionadas: File[] = [];
+  imagenesPreview: string[] = [];
+  formPublicacion: FormGroup;
 
+  publicacionesFiltradas: any[] = [];
 
-publicacionesFiltradas: any[] = [];
+  tipoBusqueda: 'publicacion' | 'negocio' | 'usuario' = 'publicacion';
+  textoBusqueda: string = '';
 
+  datos: any[] = [];
+  datosFiltrados: any[] = [];
 
-tipoBusqueda: 'publicacion' | 'negocio' | 'usuario' = 'publicacion';
-textoBusqueda: string = '';
-
-
-datos: any[] = [];
-datosFiltrados: any[] = [];
-
-
+  userId: number | null = null; // ✅ Guardamos el ID extraído del token
 
   constructor(private apiService: ApiService, private fb: FormBuilder) {
     this.formPublicacion = this.fb.group({
@@ -60,6 +55,12 @@ datosFiltrados: any[] = [];
   }
 
   ngOnInit(): void {
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      const decoded: any = jwtDecode(token);
+      this.userId = decoded.sub || decoded.user_id || null;
+    }
+
     this.cargarDatos();
   }
 
@@ -115,7 +116,6 @@ datosFiltrados: any[] = [];
     this.datosFiltrados = [];
     this.cargarDatos();
   }
-  
 
   abrirModal(imagenes: any[], index: number, event: Event): void {
     event.preventDefault();
@@ -135,25 +135,23 @@ datosFiltrados: any[] = [];
   siguiente(): void {
     if (this.imagenActual < this.imagenesModal.length - 1) this.imagenActual++;
   }
- 
-
-
-  ///GENERAR REPORTE
 
   abrirModalReporte(publicacionId: number): void {
     this.publicacionIdReporte = publicacionId;
     this.comentarioReporte = '';
     this.modalReporteAbierto = true;
   }
-  
+
   cerrarModalReporte(): void {
     this.modalReporteAbierto = false;
   }
-  
-  // Enviar el reporte
+
   enviarReporte(): void {
-    const userId = Number(sessionStorage.getItem('user_id')); // asegúrate de guardar esto en el login
-  
+    if (!this.userId) {
+      console.warn('No se pudo obtener el ID del usuario del token.');
+      return;
+    }
+
     if (!this.comentarioReporte.trim()) {
       Swal.fire({
         icon: 'warning',
@@ -162,13 +160,13 @@ datosFiltrados: any[] = [];
       });
       return;
     }
-  
+
     const payload = {
-      user_id: userId,
+      user_id: this.userId,
       publicacion_id: this.publicacionIdReporte,
       comentario: this.comentarioReporte.trim()
     };
-  
+
     this.apiService.reportarPublicacion(payload).subscribe({
       next: () => {
         Swal.fire({
@@ -191,32 +189,27 @@ datosFiltrados: any[] = [];
     });
   }
 
-
-
-  /////REGISTRAR PUBLICACION//////
-
   onPdfSelected(event: any) {
     const file = event.target.files[0];
     this.pdfSeleccionado = file;
   }
-  
+
   onImagenesSeleccionadas(event: any) {
     this.imagenesSeleccionadas = Array.from(event.target.files);
     this.imagenesPreview = this.imagenesSeleccionadas.map(file => URL.createObjectURL(file));
   }
-  
+
   guardarPublicacion() {
-    if (this.formPublicacion.invalid) return;
+    if (this.formPublicacion.invalid || !this.userId) return;
     const form = this.formPublicacion.value;
-    const user_id = sessionStorage.getItem('user_id');
-  
+
     const formData = new FormData();
     formData.append('descripcion', form.descripcion);
     if (this.pdfSeleccionado) formData.append('pdf', this.pdfSeleccionado);
-    formData.append('user_id', user_id || '');
-  
+    formData.append('user_id', this.userId.toString());
+
     this.imagenesSeleccionadas.forEach(img => formData.append('imagenes[]', img));
-  
+
     this.loading = true;
     this.apiService.guardarPublicacionUsuario(formData).subscribe({
       next: res => {
@@ -227,10 +220,9 @@ datosFiltrados: any[] = [];
           text: 'La publicación se guardó correctamente.',
           showConfirmButton: true,
         }).then(() => {
-          // Aquí acciones tras cerrar el alert
-          this.cerrarModal();         // <-- implementa este método para cerrar tu modal
-          this.formPublicacion.reset(); // Limpia el formulario
-          this.cargarDatos();   // Recarga la lista de publicaciones
+          this.cerrarModal();
+          this.formPublicacion.reset();
+          this.cargarDatos();
         });
       },
       error: err => {
@@ -244,6 +236,4 @@ datosFiltrados: any[] = [];
       }
     });
   }
-  
-  
 }

@@ -13,9 +13,11 @@ class Producto extends Model
     protected $fillable = [
         'negocio_id',
         'nombre',
-        'foto_url',
         'descripcion',
+        'foto',
         'precio',
+        'stock',
+        'publicado',
     ];
 
     /**
@@ -24,6 +26,10 @@ class Producto extends Model
     public function negocio(): BelongsTo
     {
         return $this->belongsTo(Negocio::class);
+    }
+    public function carrito()
+    {
+        return $this->hasMany(CarritoProducto::class);
     }
 }
 

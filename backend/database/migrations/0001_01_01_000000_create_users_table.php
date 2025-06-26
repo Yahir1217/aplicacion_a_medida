@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id(); // id BIGINT
             $table->string('name'); // name VARCHAR
             $table->string('email')->unique(); // email VARCHAR UNIQUE
+            $table->string('telefono')->nullable(); // nueva columna: telefono
             $table->timestamp('email_verified_at')->nullable(); // email_verified_at TIMESTAMP
             $table->string('password'); // password VARCHAR
             $table->string('foto_perfil')->nullable(); // nueva columna: foto_perfil
+            $table->boolean('visible')->default(1); // nueva columna: visible (1 = visible, 0 = oculto)
             $table->rememberToken(); // remember_token VARCHAR
             $table->timestamps(); // created_at y updated_at TIMESTAMP
         });

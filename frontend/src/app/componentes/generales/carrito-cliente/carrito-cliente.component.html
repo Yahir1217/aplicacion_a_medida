@@ -1,0 +1,395 @@
+<div class="container-fluid">
+
+
+  <div class="row mb-3">
+    <!-- Columna principal -->
+    <div class="col-xl-8">
+
+      <!-- Acordeón: Productos en tu carrito (verde) -->
+      <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-4">
+        <input type="checkbox" id="acordeonProductos" class="peer hidden" />
+        <label for="acordeonProductos"
+          class="flex items-center justify-between p-4 bg-green-600 text-white cursor-pointer hover:bg-green-700 transition-colors">
+          <span class="text-lg font-semibold">Productos en tu carrito ({{ carritoCantidad }} items)</span>
+          <svg class="w-6 h-6 transition-transform peer-checked:rotate-180" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </label>
+
+        <div class="max-h-0 overflow-hidden transition-all duration-300 peer-checked:max-h-[2000px]">
+          <div class="p-4 space-y-4">
+            <div *ngIf="carritoAgrupado.length > 0; else vacio">
+              <div *ngFor="let negocio of carritoAgrupado" class="border rounded-md p-4">
+                <div class="flex items-center mb-3">
+                  <img [src]="negocio.logo_url" alt="Logo" class="w-10 h-10 object-cover rounded-full mr-2" />
+                  <h5 class="text-lg font-semibold">{{ negocio.nombre }}</h5>
+                </div>
+
+                <div *ngFor="let item of negocio.productos" class="border rounded p-3 mb-3">
+                  <div class="flex flex-wrap items-center justify-between gap-3">
+                    <img [src]="item.producto.foto" alt="{{ item.producto.nombre }}" class="w-20 h-20 object-cover rounded-md" />
+
+                    <div class="flex-1">
+                      <h6 class="font-semibold">{{ item.producto.nombre }}</h6>
+                      <div class="flex items-center gap-2 mt-2">
+                        <ng-container *ngIf="item.cantidad > 1; else eliminarBtn">
+                          <button class="px-2 py-1 bg-gray-200 rounded" (click)="disminuirCantidad(item)">
+                            <i class="ri-subtract-line"></i>
+                          </button>
+                        </ng-container>
+                        <ng-template #eliminarBtn>
+                          <button class="px-2 py-1 bg-red-100 text-red-600 rounded" (click)="eliminarDelCarrito(item)">
+                            <i class="ri-delete-bin-6-line"></i>
+                          </button>
+                        </ng-template>
+
+                        <span class="px-2">{{ item.cantidad }}</span>
+
+                        <button class="px-2 py-1 bg-gray-200 rounded" (click)="aumentarCantidad(item)">
+                          <i class="ri-add-line"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="text-right">
+                      <p class="text-sm text-gray-500">Precio unitario:</p>
+                      <p class="text-lg font-semibold">${{ item.producto.precio }}</p>
+                      <p class="text-sm mt-1">Total: ${{ (item.cantidad * item.producto.precio) | number:'1.2-2' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Si el carrito está vacío -->
+            <ng-template #vacio>
+              <div class="text-center py-10 text-gray-600">
+                <div class="mb-4">
+                  <i class="bx bx-cart text-5xl text-green-400"></i>
+                </div>
+                <h5 class="text-lg mb-2">¡Tu carrito está vacío!</h5>
+                <a routerLink="/productos"
+                  class="inline-block px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition">Ver
+                  productos</a>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+<!-- Acordeón: Detalles del pedido (azul) -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden mb-4">
+  <input type="checkbox" id="acordeonDetalles" class="peer hidden" />
+  <label for="acordeonDetalles"
+    class="flex items-center justify-between p-4 bg-blue-600 text-white cursor-pointer hover:bg-blue-700 transition-colors">
+    <span class="text-lg font-semibold">Detalles del pedido</span>
+    <svg class="w-6 h-6 transition-transform peer-checked:rotate-180" fill="none" stroke="currentColor"
+      viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+    </svg>
+  </label>
+
+  <div class="max-h-0 overflow-hidden transition-all duration-300 peer-checked:max-h-[2000px]">
+    <div class="p-4 space-y-6">
+
+      <!-- Botón: Seleccionar todos a domicilio -->
+      <div class="flex justify-end mb-2">
+        <button
+          type="button"
+          class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded"
+          (click)="seleccionarTodosADomicilio()"
+        >
+          Pedir todo a domicilio
+        </button>
+      </div>
+
+      <!-- Select para elegir dirección del usuario -->
+      <div *ngIf="usuario?.direcciones?.length > 0" class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Selecciona tu dirección para entrega:</label>
+        <select
+          class="form-select w-full"
+          [(ngModel)]="direccionSeleccionada"
+          (change)="actualizarMapa()"
+          [compareWith]="compareDirecciones"
+        >
+          <option *ngFor="let dir of usuario.direcciones" [ngValue]="dir">
+            {{ dir.titulo }} - {{ dir.referencia }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Negocios relacionados y tipo de entrega -->
+      <div *ngIf="carritoAgrupado.length > 0" class="space-y-4">
+        <div *ngFor="let negocio of carritoAgrupado" class="border rounded-md p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <img [src]="negocio.logo_url" alt="Logo" class="w-8 h-8 rounded-full object-cover" />
+              <h6 class="font-semibold text-gray-800 mb-0">{{ negocio.nombre }}</h6>
+            </div>
+            <span
+              [ngClass]="negocio.servicio_domicilio === 1 ? 'text-green-600' : 'text-red-600'"
+              class="text-sm"
+            >
+              {{
+                negocio.servicio_domicilio === 1
+                  ? 'Incluye servicio a domicilio'
+                  : 'No incluye servicio a domicilio'
+              }}
+            </span>
+          </div>
+
+          <!-- Tipo de entrega -->
+          <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de entrega:</label>
+            <select
+              class="form-select w-full"
+              [(ngModel)]="entregasPorNegocio[negocio.id]"
+              (change)="actualizarMapa()"
+            >
+              <option value="recoger">Recoger en negocio</option>
+              <option value="domicilio">
+                {{ negocio.servicio_domicilio === 1 ? 'Pedir a domicilio' : 'Domicilio (el negocio no ofrece envío)' }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Agregar comentario -->
+          <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">¿Deseas agregar un comentario?</label>
+            <select class="form-select w-full" [(ngModel)]="comentariosPorNegocio[negocio.id].habilitado">
+              <option [ngValue]="false">No</option>
+              <option [ngValue]="true">Sí</option>
+            </select>
+          </div>
+
+          <!-- Campo de comentario -->
+          <div *ngIf="comentariosPorNegocio[negocio.id]?.habilitado" class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Comentario:</label>
+            <input
+              type="text"
+              class="form-control w-full"
+              [(ngModel)]="comentariosPorNegocio[negocio.id].texto"
+              placeholder="Escribe tu comentario para este negocio"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Mostrar mapa solo si hay algún negocio con entrega a domicilio y hay dirección seleccionada -->
+      <div *ngIf="hayDomicilioSeleccionado() && direccionSeleccionada" class="mt-6" style="height: 350px; position: relative;">
+        <div id="map" class="rounded shadow-sm" style="height: 100%; width: 100%;"></div>
+      </div>
+
+      <!-- Dirección si alguno eligió domicilio -->
+      <div *ngIf="tieneEntregaDomicilio() && !direccionSeleccionada">
+        <p class="text-red-600 font-semibold">Selecciona una dirección válida para la entrega en el mapa.</p>
+      </div>
+
+
+
+    </div>
+  </div>
+</div>
+
+<!-- Acordeón: Método de pago -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden mb-4">
+  <input type="checkbox" id="acordeonRuta" class="peer hidden" />
+  <label
+    for="acordeonRuta"
+    class="flex items-center justify-between p-4 bg-red-600 text-white cursor-pointer hover:bg-red-700 transition-colors"
+  >
+    <span class="text-lg font-semibold">Método de pago</span>
+    <svg class="w-6 h-6 transition-transform peer-checked:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+    </svg>
+  </label>
+
+  <div class="max-h-0 overflow-hidden transition-all duration-300 peer-checked:max-h-[2000px]">
+    <div class="p-4 space-y-4">
+      <!-- Método de pago -->
+      <div>
+        <label class="block font-medium mb-1">Método de pago:</label>
+        <select class="form-select w-full mb-3" [(ngModel)]="metodoPago" (change)="cambiarMetodoPago(metodoPago)">
+          <option value="efectivo">Efectivo</option>
+          <option value="tarjeta">Tarjeta</option>
+        </select>
+      </div>
+
+      <!-- Selección de tarjeta si elige "tarjeta" -->
+      <div *ngIf="metodoPago === 'tarjeta'" class="space-y-3">
+        <div *ngIf="tarjetas.length > 0; else noHayTarjetas">
+          <div
+            *ngFor="let tarjeta of tarjetas"
+            class="flex items-center space-x-3 border border-gray-300 p-3 rounded-md hover:shadow"
+          >
+            <input
+              type="radio"
+              name="tarjeta"
+              [value]="tarjeta.id"
+              [(ngModel)]="tarjetaSeleccionadaId"
+              class="form-radio text-blue-600"
+            />
+            <div class="flex items-center space-x-2">
+              <!-- Logo de tarjeta -->
+              <img
+                *ngIf="tarjeta.card.brand.toLowerCase() === 'visa'"
+                src="https://cdn-icons-png.flaticon.com/512/5968/5968397.png"
+                alt="Visa"
+                class="w-8 h-5 object-contain"
+              />
+              <!-- Puedes agregar más condicionales para otras marcas aquí -->
+
+              <!-- Número oculto -->
+              <div>
+                **** {{ tarjeta.card.last4 }}
+              </div>
+            </div>
+            <div class="text-sm text-gray-500 ml-auto">
+              Expira: {{ tarjeta.card.exp_month }}/{{ tarjeta.card.exp_year }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Si no hay tarjetas -->
+        <ng-template #noHayTarjetas>
+          <div class="text-red-600 font-medium">No tienes tarjetas registradas.</div>
+        </ng-template>
+      </div>
+
+      <!-- Tabla resumen -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <tbody>
+            <tr>
+              <td class="py-1">Subtotal productos:</td>
+              <td class="text-right">${{ subtotalProductos | number: '1.2-2' }}</td>
+            </tr>
+            <tr *ngIf="metodoPago === 'tarjeta'">
+              <td class="py-1">Cargos por servicio:</td>
+              <td class="text-right">${{ comisionServicio | number: '1.2-2' }}</td>
+            </tr>
+            <tr class="font-semibold border-t border-gray-200">
+              <td class="py-2">Total a pagar:</td>
+              <td class="text-right">${{ totalClientePaga | number: '1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+      
+
+    </div>
+
+<!-- Columna lateral: resumen -->
+<div class="col-xl-4">
+  <div class="sticky-side-div">
+    <div class="card">
+      <div class="card-header border-bottom-dashed">
+        <h5 class="card-title mb-0">Resumen del pedido</h5>
+      </div>
+
+      <div class="card-body pt-3 space-y-4 text-sm">
+        <!-- Datos del cliente -->
+        <div>
+          <p><strong>Cliente:</strong> {{ usuario?.name }}</p>
+          <p><strong>Teléfono:</strong> {{ usuario?.telefono }}</p>
+
+          <!-- Dirección si al menos un negocio es a domicilio -->
+          <ng-container *ngIf="tieneEntregaDomicilio()">
+            <p *ngIf="direccionSeleccionada">
+              <strong>Dirección:</strong> {{ direccionSeleccionada.titulo }} - {{ direccionSeleccionada.referencia }}
+            </p>
+          </ng-container>
+        </div>
+
+        <!-- Lista de negocios y productos -->
+        <div *ngFor="let negocio of carritoAgrupado">
+          <div class="border-b pb-2 mb-2">
+            <p class="font-semibold text-gray-800">{{ negocio.nombre }}</p>
+            <ul class="list-disc list-inside pl-4">
+              <li *ngFor="let item of negocio.productos">
+                {{ item.producto.nombre }} x{{ item.cantidad }}
+              </li>
+            </ul>
+            <p>
+              <strong>Entrega:</strong>
+              {{
+                entregasPorNegocio[negocio.id] === 'domicilio'
+                  ? 'A domicilio'
+                  : 'Recoger en negocio'
+              }}
+            </p>
+            <p *ngIf="comentariosPorNegocio[negocio.id]?.habilitado && comentariosPorNegocio[negocio.id]?.texto">
+              <strong>Comentario:</strong> {{ comentariosPorNegocio[negocio.id].texto }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Método de pago -->
+        <div>
+          <p class="mb-1"><strong>Método de pago:</strong></p>
+          <ng-container [ngSwitch]="metodoPago">
+            <p *ngSwitchCase="'efectivo'">Pago en efectivo</p>
+            <div *ngSwitchCase="'tarjeta'">
+              <ng-container *ngFor="let tarjeta of tarjetas">
+                <div *ngIf="tarjeta.id === tarjetaSeleccionadaId" class="flex items-center gap-2">
+                  <img
+                    *ngIf="tarjeta.card.brand.toLowerCase() === 'visa'"
+                    src="https://cdn-icons-png.flaticon.com/512/5968/5968397.png"
+                    alt="Visa"
+                    class="w-6 h-4 object-contain"
+                  />
+                  <span>**** {{ tarjeta.card.last4 }}</span>
+                </div>
+              </ng-container>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Tabla resumen -->
+        <div class="table-responsive">
+          <table class="table table-borderless mb-0">
+            <tbody>
+              <tr>
+                <td>Subtotal productos:</td>
+                <td class="text-end">${{ subtotalProductos | number:'1.2-2' }}</td>
+              </tr>
+              <tr *ngIf="metodoPago === 'tarjeta'">
+                <td>Cargos por servicio:</td>
+                <td class="text-end">${{ comisionServicio | number:'1.2-2' }}</td>
+              </tr>
+              <tr class="table-active">
+                <th>Total a pagar:</th>
+                <td class="text-end"><strong>${{ totalClientePaga | number:'1.2-2' }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje regalo -->
+    <div class="alert border-dashed alert-danger mt-3" role="alert">
+      <div class="d-flex align-items-center">
+        <lord-icon src="https://cdn.lordicon.com/nkmsrxys.json" trigger="loop"
+          colors="primary:#121331,secondary:#f06548" style="width:80px;height:80px">
+        </lord-icon>
+        <div class="ms-2">
+          <h5 class="fs-15 text-danger fw-semibold">¿Es un regalo?</h5>
+          <p class="text-black mb-1">Envoltura y mensaje personalizado,<br />sólo por
+            <span class="fw-semibold">$10.00</span> MX
+          </p>
+          <button type="button" class="btn ps-0 btn-sm btn-link text-danger text-uppercase">Agregar envoltura</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>

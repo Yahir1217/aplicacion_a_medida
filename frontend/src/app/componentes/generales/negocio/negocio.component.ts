@@ -6,6 +6,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { jwtDecode } from 'jwt-decode'; // asegúrate que esté importado
+import maplibregl from 'maplibre-gl';
+import { HttpClient } from '@angular/common/http'; // Asegúrate de tener esto al inicio
 
 @Component({
   selector: 'app-negocio',
@@ -68,35 +71,111 @@ export class NegocioComponent implements OnInit {
   cargando = false;
   modalDestacadas: any;
 
+  productos: any[] = [];
+  userId: number = 0;
+
+
+  //Direcciones
+
+  direccion = {
+    pais: '',
+    estado: '',
+    ciudad: '',
+    colonia: '',
+    calle: '',
+    numero: '',
+    cp: '',
+    titulo: '',        
+    referencia: ''    
+  };
+
+  direcciones: any[] = [];
+  direccionSeleccionada: any = this.getDireccionVacia();
+  modo: 'editar' | 'nuevo' = 'nuevo';
+
+    latitud: number = 21.81233;
+    longitud: number = -105.20639;
+    
+  
+    mapaLibre!: maplibregl.Map;
+    marcadorLibre!: maplibregl.Marker;
+
+
   constructor(
     private route: ActivatedRoute,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private http: HttpClient
   ) {}
 
+
   ngOnInit(): void {
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        this.userId = decoded.sub;
+      } catch (e) {
+        console.error('Error al decodificar token', e);
+      }
+    }
+
+    
+  
     this.route.params.subscribe(params => {
       this.negocioId = +params['id'];
       this.cargarNegocio();
+      this.cargarProductos(this.negocioId.toString());
     });
   }
+  
 
   cargarNegocio(): void {
+    const token = sessionStorage.getItem('token');
+    let userIdFromToken: number | null = null;
+  
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        userIdFromToken = Number(decoded.sub || decoded.user_id || null);
+      } catch (error) {
+        console.error('Error al decodificar token JWT:', error);
+      }
+    }
+  
     this.apiService.obtenerDetalleNegocio(this.negocioId).subscribe({
       next: (data) => {
         this.negocio = data;
-        const userIdSession = Number(sessionStorage.getItem('user_id'));
-        this.mi_negocio = (this.negocio.user_id === userIdSession);
+        this.negocioSeleccionado = this.negocio; // ← Corregido
   
-        // Extraer publicaciones destacadas ordenadas
+        this.mi_negocio = userIdFromToken !== null && this.negocio.user_id === userIdFromToken;
+  
         this.publicacionesDestacadas = this.negocio.publicaciones
           .filter((p: any) => p.destacado === 1)
           .sort((a: any, b: any) => (a.orden ?? 999) - (b.orden ?? 999));
+  
+        // Si hay direcciones, usar la primera
+        if (this.negocio.direcciones && this.negocio.direcciones.length > 0) {
+          this.direccionSeleccionada = this.negocio.direcciones[0];
+  
+          // Asegurar que lat/lng sean números válidos
+          this.latitud = parseFloat(this.direccionSeleccionada.latitud);
+          this.longitud = parseFloat(this.direccionSeleccionada.longitud);
+  
+          this.modo = 'editar';
+        } else {
+          this.direccionSeleccionada = this.getDireccionVacia();
+          this.latitud = 0;
+          this.longitud = 0;
+          this.modo = 'nuevo';
+        }
       },
       error: (err) => {
         console.error('Error al obtener datos del negocio', err);
       }
     });
   }
+  
+  
   
 
   abrirModalEditar(id: number): void {
@@ -620,5 +699,274 @@ guardarOrdenDestacadas() {
     }
   });
 }
+
+
+
+    ////CARGAR NEGOCIO
+    cargarProductos(negocioId: string): void {
+      this.cargando = true;
+      this.apiService.getProductosNegocio(negocioId, 'si').subscribe({
+        next: (respuesta) => {
+          // Si la respuesta es un array, se le agrega la propiedad `cantidad`
+          if (Array.isArray(respuesta)) {
+            this.productos = respuesta.map((producto: any) => ({
+              ...producto,
+              cantidad: 1 // Valor inicial por defecto
+            }));
+          } else {
+            this.productos = [];
+            console.warn('La respuesta no es un arreglo de productos:', respuesta);
+          }
+          this.cargando = false;
+        },
+        error: (error) => {
+          console.error('Error al obtener productos del negocio:', error);
+          this.cargando = false;
+        }
+      });
+    } 
+    
+
+    ////AGREGAR PRODUCTO AL CARRITO
+
+    validarCantidad(producto: any): void {
+      let cantidad = Number(producto.cantidad);
+    
+      // Si no es número o es menor a 1
+      if (isNaN(cantidad) || cantidad < 1) {
+        producto.cantidad = 1;
+      } else if (cantidad > producto.stock) {
+        producto.cantidad = producto.stock;
+      } else {
+        producto.cantidad = Math.floor(cantidad); // Solo valores enteros válidos
+      }
+    }
+    
+    
+    
+    incrementarCantidad(producto: any): void {
+      if (producto.cantidad < producto.stock) {
+        producto.cantidad++;
+      }
+    }
+    
+    decrementarCantidad(producto: any): void {
+      if (producto.cantidad > 1) {
+        producto.cantidad--;
+      }
+    }
+    
+    
+    
+    agregarAlCarrito(producto: any): void {
+      const cantidad = producto.cantidad || 1;
+    
+      if (cantidad > producto.stock) {
+        return; // No hacer nada si excede el stock
+      }
+    
+      const data = {
+        user_id: this.userId,
+        producto_id: producto.id,
+        cantidad: cantidad
+      };
+    
+      this.apiService.agregarProductoAlCarrito(data).subscribe({
+        next: () => {
+          Swal.fire({
+            icon: 'success',
+            title: '¡Agregado!',
+            text: 'Producto agregado al carrito correctamente.',
+            showConfirmButton: false,
+            timer: 1500, // Se cierra solo después de 1.5 segundos
+            timerProgressBar: true
+          });
+        },
+        error: (err) => {
+          console.error('Error al agregar al carrito', err);
+        }
+      });
+    }
+
+
+
+    ////AGREGAR DIRECCION
+
+
+    getDireccionCompleta(): string {
+      const partes = [
+        this.direccionSeleccionada.calle + (this.direccionSeleccionada.numero ? ` ${this.direccionSeleccionada.numero}` : ''),
+        this.direccionSeleccionada.colonia,
+        this.direccionSeleccionada.cp,
+        this.direccionSeleccionada.ciudad,
+        this.direccionSeleccionada.estado,
+        this.direccionSeleccionada.pais,
+      ].filter(p => p && p.trim() !== '');
+      return partes.join(', ');
+    }
+    
+    activarTabDireccion(): void {
+      setTimeout(() => {
+        if (!this.mapaLibre) {
+          this.inicializarMapa();
+        } else {
+          const nuevaPos: [number, number] = [this.longitud, this.latitud];
+          this.marcadorLibre.setLngLat(nuevaPos);
+          this.mapaLibre.setCenter(nuevaPos);
+          this.mapaLibre.resize();
+        }
+      }, 600);
+    }
+    
+    getDireccionVacia() {
+      return {
+        id: null,
+        pais: '',
+        estado: '',
+        ciudad: '',
+        colonia: '',
+        calle: '',
+        numero: '',
+        cp: '',
+        titulo: '',
+        referencia: '',
+        latitud: this.latitud,
+        longitud: this.longitud
+      };
+    }
+    
+    inicializarMapa(): void {
+      const mapContainer = document.getElementById('map');
+      if (!mapContainer) return;
+    
+      this.mapaLibre = new maplibregl.Map({
+        container: mapContainer,
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: [this.longitud, this.latitud],
+        zoom: 14
+      });
+    
+      const el = document.createElement('div');
+      el.style.backgroundImage = 'url("https://cdn-icons-png.flaticon.com/512/6735/6735939.png")';
+      el.style.width = '40px';
+      el.style.height = '40px';
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundRepeat = 'no-repeat';
+      el.style.borderRadius = '50%';
+    
+      this.marcadorLibre = new maplibregl.Marker({ element: el, draggable: true })
+        .setLngLat([this.longitud, this.latitud])
+        .addTo(this.mapaLibre);
+    
+      this.marcadorLibre.on('dragend', () => {
+        const lngLat = this.marcadorLibre.getLngLat();
+        this.longitud = lngLat.lng;
+        this.latitud = lngLat.lat;
+      });
+    
+      this.mapaLibre.on('load', () => {
+        this.mapaLibre.resize();
+      });
+    }
+    
+    guardarDireccion(): void {
+      console.log('Ejecutando guardarDireccion...');
+    
+      if (!this.negocioSeleccionado || !this.negocioSeleccionado.id) {
+        console.warn('No hay negocioSeleccionado.id');
+        Swal.fire('Error', 'No se ha cargado el negocio correctamente.', 'error');
+        return;
+      }
+    
+      if (!this.direccionSeleccionada) {
+        console.warn('direccionSeleccionada está null o indefinida');
+        Swal.fire('Error', 'No hay información de dirección para guardar.', 'error');
+        return;
+      }
+    
+      const payload = {
+        titulo: this.direccionSeleccionada.titulo,
+        referencia: this.direccionSeleccionada.referencia,
+        latitud: this.latitud,
+        longitud: this.longitud,
+        tipo: 'negocio'
+      };
+    
+      if (!this.direccionSeleccionada.id) {
+        console.log('Creando nueva dirección...', payload);
+        this.apiService.crearDireccionNegocio(this.negocioSeleccionado.id, payload).subscribe({
+          next: () => {
+            Swal.fire('Listo', 'Dirección creada correctamente.', 'success');
+            this.cargarNegocio();
+            this.modo = 'editar';
+          },
+          error: (err) => {
+            console.error('Error al crear dirección:', err);
+            Swal.fire('Error', 'No se pudo crear la dirección.', 'error');
+          },
+        });
+      } else {
+        console.log('Actualizando dirección existente...', payload);
+        this.apiService.actualizarDireccionNegocio(
+          this.negocioSeleccionado.id,
+          this.direccionSeleccionada.id,
+          payload
+        ).subscribe({
+          next: () => {
+            Swal.fire('Listo', 'Dirección actualizada correctamente.', 'success');
+            this.cargarNegocio();
+          },
+          error: (err) => {
+            console.error('Error al actualizar dirección:', err);
+            Swal.fire('Error', 'No se pudo actualizar la dirección.', 'error');
+          },
+        });
+      }
+    }
+    
+    
+    
+    
+    buscarDireccion(event?: Event): void {
+      if (event) event.preventDefault();
+    
+      const direccionParaBuscar = this.getDireccionCompleta().trim();
+    
+      if (!direccionParaBuscar) {
+        Swal.fire('Atención', 'Por favor ingresa una dirección para buscar.', 'warning');
+        return;
+      }
+    
+      const encoded = encodeURIComponent(direccionParaBuscar);
+      const url = `http://localhost:8000/api/geocodificar?q=${encoded}`;
+    
+      const token = sessionStorage.getItem('token');
+      const headers = {
+        Authorization: `Bearer ${token}`
+      };
+    
+      this.http.get<any[]>(url, { headers }).subscribe({
+        next: (respuesta) => {
+          if (respuesta.length > 0) {
+            const lugar = respuesta[0];
+            this.latitud = parseFloat(lugar.lat);
+            this.longitud = parseFloat(lugar.lon);
+    
+            const nuevaPos: [number, number] = [this.longitud, this.latitud];
+            if (this.marcadorLibre) this.marcadorLibre.setLngLat(nuevaPos);
+            if (this.mapaLibre) this.mapaLibre.setCenter(nuevaPos);
+          } else {
+            Swal.fire('No encontrado', 'No se encontraron resultados para la dirección ingresada.', 'info');
+          }
+        },
+        error: (error) => {
+          console.error('Error al buscar dirección:', error);
+          Swal.fire('Error', 'No se pudo realizar la búsqueda.', 'error');
+        }
+      });
+    }
+    
+
+    
   
 }

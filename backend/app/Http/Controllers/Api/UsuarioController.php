@@ -15,6 +15,8 @@ use Cloudinary\Cloudinary as CloudinaryClient;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+
 
 
 
@@ -116,26 +118,29 @@ class UsuarioController extends Controller
 
     public function obtenerPerfil($id)
     {
-        $usuario = User::with(['roles', 'negocios'])->find($id);
-
+        $usuario = User::with(['roles', 'negocios', 'direcciones'])->find($id);
+    
         if (!$usuario) {
             return response()->json(['mensaje' => 'Usuario no encontrado'], 404);
         }
-
+    
         return response()->json([
             'id' => $usuario->id,
             'name' => $usuario->name,
             'email' => $usuario->email,
+            'telefono' => $usuario->telefono,
             'email_verified_at' => $usuario->email_verified_at,
             'password' => $usuario->password,
             'foto_perfil' => $usuario->foto_perfil,
+            'visible' => $usuario->visible,
             'roles' => $usuario->roles->pluck('nombre'),
             'negocios' => $usuario->negocios,
+            'direcciones' => $usuario->direcciones, // todas las direcciones
             'created_at' => $usuario->created_at, 
             'updated_at' => $usuario->updated_at,
         ]);
-        
-    } 
+    }
+    
 
 
     public function actualizarPerfil(Request $request, $id)
@@ -164,6 +169,11 @@ class UsuarioController extends Controller
             if ($request->has('email')) {
                 $usuario->email = $request->email;
                 \Log::info('Correo actualizado', ['nuevo_email' => $request->email]);
+            }
+    
+            if ($request->has('telefono')) {
+                $usuario->telefono = $request->telefono;
+                \Log::info('Teléfono actualizado', ['telefono' => $request->telefono]);
             }
     
             if ($request->hasFile('foto')) {
@@ -212,6 +222,7 @@ class UsuarioController extends Controller
             return response()->json(['error' => 'Error al actualizar usuario'], 500);
         }
     }
+    
 
     public function enviarCodigoVerificacion($id)
     {
@@ -264,6 +275,54 @@ class UsuarioController extends Controller
 
     return response()->json(['message' => 'Correo verificado con éxito']);
 }
+
+    public function cambiarVisibilidad(Request $request, $id)
+    {
+        try {
+            $usuario = User::findOrFail($id);
+
+            $request->validate([
+                'visible' => 'required|boolean',
+            ]);
+
+            $usuario->visible = $request->visible;
+            $usuario->save();
+
+            return response()->json(['mensaje' => 'Visibilidad actualizada']);
+        } catch (\Exception $e) {
+            \Log::error('Error al cambiar visibilidad: ' . $e->getMessage());
+            return response()->json(['error' => 'No se pudo actualizar la visibilidad'], 500);
+        }
+    }
+
+
+    public function geocodificar(Request $request)
+    {
+        $query = $request->query('q');
+    
+        $response = Http::withHeaders([
+            'User-Agent' => 'MiComercioApp/1.0 (admin@micomercio.com)' // cambia el correo si quieres
+        ])->get('https://nominatim.openstreetmap.org/search', [
+            'q' => $query,
+            'format' => 'json',
+            'limit' => 1,
+        ]);
+    
+        if ($response->successful()) {
+            return response()->json($response->json());
+        }
+    
+        // Debug si falla
+        return response()->json([
+            'message' => 'Error al obtener resultados.',
+            'status' => $response->status(),
+            'body' => $response->body()
+        ], 500);
+    }
+    
+    
+
+
 
 
 

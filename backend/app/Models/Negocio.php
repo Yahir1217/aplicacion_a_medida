@@ -64,5 +64,15 @@ class Negocio extends Model
     {
         return $this->hasMany(Producto::class);
     }
+    public function stripeCustomer()
+    {
+        return $this->morphOne(StripeCustomer::class, 'stripeCustomerable');
+    }
+    public function direcciones()
+    {
+        return $this->hasMany(Direccion::class);
+    }
+
+
 
 }

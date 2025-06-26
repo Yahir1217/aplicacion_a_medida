@@ -61,4 +61,18 @@
     opacity: 1;
   }
   
+ 
+  .dropdown-menu-cart {
+    position: absolute;
+    top: calc(100% + 50px);  /* más abajo */
+    left: 10%;               /* más a la izquierda */
+    transform: translateX(0); /* sin moverlo con translateX */
+    z-index: 9999;
+    width: 380px;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  
   

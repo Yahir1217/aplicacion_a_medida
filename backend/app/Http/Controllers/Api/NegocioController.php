@@ -94,20 +94,22 @@ class NegocioController extends Controller
         $negocio = Negocio::with([
             'user:id,name', // Solo trae el nombre del usuario
             'correos',
-            'telefonos',          // Agregar teléfonos
+            'telefonos',
             'redesSociales',
             'horarios',
-            'categorias', // Relación many-to-many ya definida
+            'categorias',
             'publicaciones.imagenes',
-            'publicaciones.categorias'
+            'publicaciones.categorias',
+            'direcciones' // <-- Agrega esta línea para traer direcciones
         ])->find($id);
-
+    
         if (!$negocio) {
             return response()->json(['message' => 'Negocio no encontrado'], 404);
         }
-
+    
         return response()->json($negocio);
     }
+    
 
     public function ActualizarNegocioCompleto(Request $request, $id)
     {

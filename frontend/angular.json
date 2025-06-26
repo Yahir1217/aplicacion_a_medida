@@ -32,7 +32,10 @@
   "src/assets/plantilla/css/app.min.css",
   "src/assets/plantilla/css/custom.min.css",
   "src/assets/plantilla/libs/jsvectormap/css/jsvectormap.min.css",
-  "src/assets/plantilla/libs/swiper/swiper-bundle.min.css"
+  "src/assets/plantilla/libs/swiper/swiper-bundle.min.css",
+  "node_modules/maplibre-gl/dist/maplibre-gl.css"
+
+
 ],
 "scripts": [
   "src/assets/plantilla/js/layout.js",

@@ -7,6 +7,11 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UsuarioController;
 use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\NegocioController;
+use App\Http\Controllers\Api\ProductoController;
+use App\Http\Controllers\Api\CarritoProductoController;
+use App\Http\Controllers\Api\StripeTarjetaController;
+use App\Http\Controllers\Api\DireccionController;
+
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 /**
@@ -74,6 +79,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/publicaciones', [NegocioController::class, 'PublicacionesGenerales']);
     Route::get('/negocios_generales', [NegocioController::class, 'NegociosGenerales']);
     Route::get('/usuarios_generales', [NegocioController::class, 'UsuariosGenerales']);
+    Route::put('usuarios/{id}/visibilidad', [UsuarioController::class, 'cambiarVisibilidad']);
 
     Route::post('/reportes', [NegocioController::class, 'SubirReporte']);
     Route::post('/publicaciones/usuario', [NegocioController::class, 'GuardarPublicacionUsuario']);
@@ -84,10 +90,48 @@ Route::middleware('auth:api')->group(function () {
 
     ///EMPRENDEDOR
     Route::get('/mi-negocio', [NegocioController::class, 'obtenerMiNegocios']);
+    Route::get('/negocios/{negocio}/productos', [ProductoController::class, 'productosPorNegocio']);
+
+    Route::post('/productos', [ProductoController::class, 'store']);
+    Route::post('/productos/{id}/actualizar', [ProductoController::class, 'update']);
+    Route::post('/productos/{id}/publicar', [ProductoController::class, 'publicar']);
+    Route::put('/productos/{id}/publicar', [ProductoController::class, 'actualizarEstadoPublicacion']);
+    Route::delete('/productos/{id}', [ProductoController::class, 'destroy']);
+
+    ///CARRITO
+    Route::post('/carrito-productos', [CarritoProductoController::class, 'store']);
+    Route::get('/carrito-productos', [CarritoProductoController::class, 'index']);
+    Route::put('/carrito/{id}', [CarritoProductoController::class, 'update']);
+    Route::delete('/carrito/{id}', [CarritoProductoController::class, 'destroy']);
+
+    ///STRIPEA
+    Route::post('/stripe/tarjetas', [StripeTarjetaController::class, 'store']);
+    Route::get('/stripe/tarjetas', [StripeTarjetaController::class, 'obtenerTarjetas']);
+
+    ///DIRECCION
+    Route::post('/usuarios/{userId}/direccion', [DireccionController::class, 'crearDireccion']);
+    Route::put('/usuarios/{userId}/direccion/{direccionId}', [DireccionController::class, 'actualizarDireccion']);
+
+    Route::post('/negocios/{negocioId}/direccion', [DireccionController::class, 'crearDireccionNegocio']);
+    Route::put('/negocios/{negocioId}/direccion/{direccionId}', [DireccionController::class, 'actualizarDireccionNegocio']);
+
+    
+
+
+
+    
+
 
 
 
 });
+Route::middleware('auth:api')->get('/usuario', function(Request $request) {
+    return $request->user();
+});
+
+
+Route::get('/geocodificar', [UsuarioController::class, 'geocodificar']);
+
 
 
 

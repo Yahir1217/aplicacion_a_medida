@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 import { HttpClientModule } from '@angular/common/http';
+import { jwtDecode } from 'jwt-decode'; // asegúrate de tener esta línea arriba
 
 /**
  * Componente de Login
@@ -62,10 +63,14 @@ export class LoginComponent {
   login() {
     this.auth.login(this.email, this.password).subscribe({
       next: (res) => {
-        // Guardar token y ID de usuario
+        // Guardar solo el token
         sessionStorage.setItem('token', res.token);
-        sessionStorage.setItem('user_id', res.user_id);
-
+  
+        // (Opcional) Mostrar el ID extraído del token en consola
+        const decoded: any = jwtDecode(res.token);
+        const userId = decoded.sub || decoded.user_id;
+        console.log('ID extraído del token:', userId);
+  
         // Mostrar mensaje de éxito
         Swal.fire({
           icon: 'success',
@@ -73,12 +78,11 @@ export class LoginComponent {
           showConfirmButton: false,
           timer: 1500,
         });
-
-        // Redirigir al usuario a la vista principal
+  
+        // Redirigir al usuario
         this.router.navigate(['/inicio']);
       },
       error: () => {
-        // Mostrar mensaje de error
         Swal.fire({
           icon: 'error',
           title: 'Error',

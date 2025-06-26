@@ -62,6 +62,24 @@ export const routes: Routes = [
     canActivate: [AuthGuard], // <- y aquí también
     loadComponent: () =>
       import('./componentes/emprendedor/mi-negocio/mi-negocio.component').then(m => m.MiNegocioComponent),
+  },
+  {
+    path: 'negocio/:id/productos',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./componentes/emprendedor/productos-negocio/productos-negocio.component').then(m => m.ProductosNegocioComponent),
+  },
+  {
+    path: 'mis-tarjetas/:id',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./componentes/mis-tarjetas/mis-tarjetas.component').then(m => m.MisTarjetasComponent),
+  },
+  {
+    path: 'carrito-cliente',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./componentes/generales/carrito-cliente/carrito-cliente.component').then(m => m.CarritoClienteComponent),
   }
   
   

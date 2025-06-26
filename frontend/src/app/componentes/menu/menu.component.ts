@@ -1,9 +1,18 @@
-import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  OnInit,
+  OnDestroy,
+  ViewChild
+} from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import Swal from 'sweetalert2';
 import { ApiService } from '../../servicios/api.service';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
+import { jwtDecode } from 'jwt-decode';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-menu',
@@ -11,15 +20,24 @@ import { HttpClientModule } from '@angular/common/http';
   templateUrl: './menu.component.html',
   imports: [CommonModule, RouterModule, HttpClientModule]
 })
-export class MenuComponent implements OnInit {
+export class MenuComponent implements OnInit, OnDestroy {
+  @ViewChild('carritoScroll', { static: false }) carritoScroll!: ElementRef;
+  @ViewChild('dropdownButton', { static: false }) dropdownButton!: ElementRef;
+
   mobileMenuOpen = false;
   dropdownOpen = false;
+  carrito: any[] = [];
 
   nombreUsuario: string = '';
   emailUsuario: string = '';
-  usuarioFotoPerfil: string | null = null;  
+  usuarioFotoPerfil: string | null = null;
   userId: string | null = null;
+  carritoCantidad: number = 0;
+  totalCarrito: number = 0;
 
+  mostrarCarritoDropdown: boolean = false;
+
+  private carritoSubscription!: Subscription;
 
   constructor(
     private router: Router,
@@ -28,38 +46,63 @@ export class MenuComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && sessionStorage) {
       const token = sessionStorage.getItem('token');
+
       if (token) {
-        const id = sessionStorage.getItem('user_id');
-        this.userId = id; // guardar para usar en [routerLink]
+        try {
+          const decoded: any = jwtDecode(token);
+          this.userId = decoded?.sub || null;
 
-        if (id) {
-          this.apiService.obtenerUsuario(id).subscribe({
-            next: (data) => {
-              this.nombreUsuario = data.name;
-              this.emailUsuario = data.email;
-              this.usuarioFotoPerfil = data.foto_perfil;
-
-            },
-            error: (err) => {
-              console.error('Error al obtener usuario:', err);
-            }
-          });
-        } else {
-          console.warn('ID de usuario no encontrado en sessionStorage.');
+          if (this.userId) {
+            this.apiService.obtenerUsuario(this.userId).subscribe({
+              next: (data) => {
+                this.nombreUsuario = data.name;
+                this.emailUsuario = data.email;
+                this.usuarioFotoPerfil = data.foto_perfil;
+              },
+              error: (err) => {
+                console.error('Error al obtener usuario:', err);
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Token inválido o expirado:', error);
+          sessionStorage.clear();
+          this.router.navigate(['/login']);
         }
       } else {
-        console.warn('Token no disponible todavía, no se llamó a obtenerUsuario().');
+        this.router.navigate(['/login']);
       }
+    }
+
+    this.carritoSubscription = this.apiService.carrito$.subscribe((data: any) => {
+      const scrollElement = this.carritoScroll?.nativeElement;
+      const currentScrollTop = scrollElement?.scrollTop || 0;
+
+      this.carrito = Array.isArray(data.carrito)
+        ? data.carrito
+        : (Array.isArray(data.carrito?.carrito) ? data.carrito.carrito : []);
+
+      this.actualizarTotales();
+
+      // Restaurar scroll sin saltar
+      setTimeout(() => {
+        if (scrollElement) scrollElement.scrollTop = currentScrollTop;
+      }, 50);
+    });
+
+    this.apiService.refrescarCarrito();
+  }
+
+  ngOnDestroy(): void {
+    if (this.carritoSubscription) {
+      this.carritoSubscription.unsubscribe();
     }
   }
 
   isMobile(): boolean {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth <= 768;
-    }
-    return false;
+    return typeof window !== 'undefined' && window.innerWidth <= 768;
   }
 
   toggleMobileMenu() {
@@ -69,6 +112,7 @@ export class MenuComponent implements OnInit {
   closeMenus() {
     this.dropdownOpen = false;
     this.mobileMenuOpen = false;
+    this.mostrarCarritoDropdown = false;
   }
 
   logout() {
@@ -99,12 +143,58 @@ export class MenuComponent implements OnInit {
     this.dropdownOpen = !this.dropdownOpen;
   }
 
-  // Cierra el dropdown si se hace clic fuera
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: Event): void {
     const clickedInside = this.elementRef.nativeElement.contains(event.target);
     if (!clickedInside) {
       this.dropdownOpen = false;
+      this.mobileMenuOpen = false;
+      this.mostrarCarritoDropdown = false;
     }
+  }
+
+  // CARRITO
+
+  aumentarCantidad(item: any) {
+    const nuevaCantidad = item.cantidad + 1;
+    if (nuevaCantidad <= item.producto.stock) {
+      this.apiService.actualizarCantidadEnCarrito(item.id, nuevaCantidad).subscribe(() => {
+        item.cantidad = nuevaCantidad;
+        this.actualizarTotales();
+      });
+    }
+  }
+
+  disminuirCantidad(item: any) {
+    if (item.cantidad > 1) {
+      const nuevaCantidad = item.cantidad - 1;
+      this.apiService.actualizarCantidadEnCarrito(item.id, nuevaCantidad).subscribe(() => {
+        item.cantidad = nuevaCantidad;
+        this.actualizarTotales();
+      });
+    } else {
+      this.eliminarDelCarrito(item);
+    }
+  }
+
+  eliminarDelCarrito(item: any) {
+    this.apiService.eliminarProductoDelCarrito(item.id).subscribe(() => {
+      this.carrito = this.carrito.filter(p => p.id !== item.id);
+      this.actualizarTotales();
+      this.apiService.refrescarCarrito();
+    });
+  }
+
+  actualizarTotales() {
+    this.carritoCantidad = this.carrito.reduce((total, item) => total + (item.cantidad || 0), 0);
+    this.totalCarrito = this.carrito.reduce((total, item) => total + (item.cantidad * (item.producto?.precio || 0)), 0);
+  }
+
+  irACarrito() {
+    // Cierra el dropdown del carrito
+    const btn = this.dropdownButton?.nativeElement;
+    if (btn) btn.click();
+
+    this.router.navigate(['/carrito-cliente']);
   }
 }

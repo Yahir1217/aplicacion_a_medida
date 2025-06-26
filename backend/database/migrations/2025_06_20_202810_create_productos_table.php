@@ -12,16 +12,20 @@ class CreateProductosTable extends Migration
             $table->id();
             $table->foreignId('negocio_id')->constrained('negocios')->onDelete('cascade');
             $table->string('nombre');
-            $table->string('foto_url')->nullable();
             $table->text('descripcion')->nullable();
-            $table->decimal('precio', 10, 2); // hasta 99999999.99
+            $table->string('foto')->nullable();
+            $table->decimal('precio', 10, 2)->default(0);
+            $table->integer('stock')->default(0);
+            $table->enum('publicado', ['si', 'no'])->default('no');
             $table->timestamps();
         });
     }
+    
 
     public function down()
     {
         Schema::dropIfExists('productos');
     }
 }
+
 

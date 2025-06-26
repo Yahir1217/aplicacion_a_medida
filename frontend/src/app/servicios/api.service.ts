@@ -2,6 +2,11 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Observable } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
+import { forkJoin } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
 
 @Injectable({
   providedIn: 'root'
@@ -36,6 +41,10 @@ export class ApiService {
   
     return headers;
   }
+
+  private carritoSubject = new BehaviorSubject<{ carrito: any[]; usuario: any }>({ carrito: [], usuario: null });
+  carrito$ = this.carritoSubject.asObservable();
+
   
   
 
@@ -50,7 +59,7 @@ export class ApiService {
     });
   }
 
-
+ 
   obtenerRoles(search: string = '') {
     let params = '';
     if (search.trim() !== '') {
@@ -314,16 +323,232 @@ guardarPublicacionUsuario(data: FormData) {
 }
 
 getMiNegocio(): Observable<any> {
-  const user_id = sessionStorage.getItem('user_id');
+  const token = sessionStorage.getItem('token');
+  let user_id: string | null = null;
+
+  if (token) {
+    try {
+      const decoded: any = jwtDecode(token);
+      user_id = decoded.sub || decoded.user_id || null;
+    } catch (error) {
+      console.error('Error al decodificar el token JWT:', error);
+    }
+  }
+
   const headers = this.getAuthHeaders();
+
+  if (!user_id) {
+    throw new Error('No se pudo obtener el ID de usuario desde el token');
+  }
+
   return this.http.get<any>(`${this.apiUrl}/mi-negocio?user_id=${user_id}`, { headers });
 }
 
 
+getProductosNegocio(negocioId: string, publicado?: string): Observable<any> {
+  let url = `${this.apiUrl}/negocios/${negocioId}/productos`;
+  if (publicado) {
+    url += `?publicado=${publicado}`; // 'si' o 'no'
+  }
+  return this.http.get<any>(url, { headers: this.getAuthHeaders() });
+}
 
-    
-    
-    
+
+crearProducto(data: FormData): Observable<any> {
+  const token = sessionStorage.getItem('token') || '';
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${token}`
+  });
+  return this.http.post(`${this.apiUrl}/productos`, data, { headers });
+}
+
+actualizarProducto(id: string, data: FormData): Observable<any> {
+  const token = sessionStorage.getItem('token') || '';
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${token}`
+  });
+  return this.http.post(`${this.apiUrl}/productos/${id}/actualizar`, data, { headers });
+}
+
+
+publicarProducto(id: number): Observable<any> {
+  const token = localStorage.getItem('token') || '';
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  return this.http.post(`${this.apiUrl}/productos/${id}/publicar`, {}, { headers });
+}
+
+
+actualizarEstadoPublicacion(id: number, estado: 'si' | 'no'): Observable<any> {
+  const token = localStorage.getItem('token') || '';
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  // Aquí enviamos un PUT para actualizar el estado 'publicado' del producto
+  return this.http.put(`${this.apiUrl}/productos/${id}/publicar`, { publicado: estado }, { headers });
+}
+
+eliminarProducto(id: number): Observable<any> {
+  const token = localStorage.getItem('token') || '';
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  return this.http.delete(`${this.apiUrl}/productos/${id}`, { headers });
+}
+
+agregarProductoAlCarrito(data: any): Observable<any> {
+  const token = localStorage.getItem('token') || '';
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  });
+
+  return this.http.post(`${this.apiUrl}/carrito-productos`, data, { headers }).pipe(
+    tap(() => this.refrescarCarrito())  // Actualiza el carrito cuando se agrega un producto
+  );
+}
+
+refrescarCarrito() {
+  if (!this.isBrowser) return;
+
+  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') || '' : '';
+  const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+
+  forkJoin({
+    carrito: this.http.get<any[]>(`${this.apiUrl}/carrito-productos`, { headers }),
+    usuario: this.http.get<any>(`${this.apiUrl}/usuario`, { headers }),
+  }).subscribe({
+    next: ({ carrito, usuario }) => {
+      this.carritoSubject.next({ carrito, usuario });
+    },
+    error: (err) => console.error('Error al actualizar carrito y usuario:', err)
+  });
+}
+
+
+
+
+
+
+obtenerProductosDelCarrito(): Observable<any> {
+  const token = localStorage.getItem('token') || '';
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`,
+  }); 
+
+  return this.http.get(`${this.apiUrl}/carrito-productos`, { headers });
+}
+
+
+
+actualizarCantidadEnCarrito(carritoId: number, cantidad: number) {
+  return this.http.put(`${this.apiUrl}/carrito/${carritoId}`, { cantidad }, {
+    headers: this.getAuthHeaders()
+  });
+}
+
+eliminarProductoDelCarrito(carritoId: number) {
+  return this.http.delete(`${this.apiUrl}/carrito/${carritoId}`, {
+    headers: this.getAuthHeaders()
+  });
+}
+
+
+///STRIPEA
+
+crearTarjetaStripe(data: any): Observable<any> {
+  const headers = this.getAuthHeaders();
+  return this.http.post(`${this.apiUrl}/stripe/tarjetas`, data, { headers });
+}
+
+obtenerTarjetasStripe(tipo: 'cliente' | 'negocio', negocio_id: number | null = null): Observable<any> {
+  const headers = this.getAuthHeaders();
+  const params: any = { tipo };
+  if (negocio_id) params.negocio_id = negocio_id;
+
+  return this.http.get(`${this.apiUrl}/stripe/tarjetas`, { headers, params });
+}
+ 
+
+actualizarVisibilidadUsuario(id: string, visible: number) {
+  return this.http.put(`${this.apiUrl}/usuarios/${id}/visibilidad`, { visible }, {
+    headers: this.getAuthHeaders()
+  });
+}
+
+
+crearDireccionUsuario(
+  userId: string,
+  datos: {
+    titulo: string;
+    referencia: string;
+    latitud: number;
+    longitud: number;
+  }
+) {
+  return this.http.post(
+    `${this.apiUrl}/usuarios/${userId}/direccion`,
+    datos,
+    { headers: this.getAuthHeaders() }
+  );
+}
+
+actualizarDireccionUsuario(
+  userId: string,
+  direccionId: number,
+  datos: {
+    titulo: string;
+    referencia: string;
+    latitud: number;
+    longitud: number;
+  }
+) {
+  return this.http.put(
+    `${this.apiUrl}/usuarios/${userId}/direccion/${direccionId}`,
+    datos,
+    { headers: this.getAuthHeaders() }
+  );
+}
+
+crearDireccionNegocio(
+  negocioId: number,
+  datos: {
+    titulo: string;
+    referencia: string;
+    latitud: number;
+    longitud: number;
+  }
+) {
+  const headers = this.getAuthHeaders();
+  return this.http.post(
+    `${this.apiUrl}/negocios/${negocioId}/direccion`,
+    datos,
+    { headers }
+  );
+}
+
+
+actualizarDireccionNegocio(
+  negocioId: number,
+  direccionId: number,
+  datos: {
+    titulo: string;
+    referencia: string;
+    latitud: number;
+    longitud: number;
+  }
+) {
+  return this.http.put(
+    `${this.apiUrl}/negocios/${negocioId}/direccion/${direccionId}`,
+    datos,
+    { headers: this.getAuthHeaders() }
+  );
+}
+
 
 
 }
