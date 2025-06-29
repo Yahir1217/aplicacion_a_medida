@@ -10,10 +10,12 @@ return new class extends Migration {
             $table->id();
             $table->morphs('stripe_customerable'); // Crea: stripe_customerable_id y stripe_customerable_type
             $table->string('stripe_customer_id')->unique();
+            $table->string('stripe_account_id')->nullable(); // <-- Nuevo campo para la cuenta conectada
             $table->string('default_payment_method')->nullable();
             $table->timestamps();
         });
     }
+    
 
     public function down(): void {
         Schema::dropIfExists('stripe_customers');

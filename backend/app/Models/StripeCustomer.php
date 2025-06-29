@@ -13,6 +13,7 @@ class StripeCustomer extends Model
         'stripe_customerable_id',
         'stripe_customerable_type',
         'stripe_customer_id',
+        'stripe_account_id',         // <-- Añadido aquí
         'default_payment_method',
     ];
 
@@ -21,3 +22,4 @@ class StripeCustomer extends Model
         return $this->morphTo();
     }
 }
+

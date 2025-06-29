@@ -37,6 +37,9 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   mostrarCarritoDropdown: boolean = false;
 
+  negocios: any[] = [];
+  expandedNegocioId: number | null = null;
+
   private carritoSubscription!: Subscription;
 
   constructor(
@@ -48,13 +51,14 @@ export class MenuComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (typeof window !== 'undefined' && sessionStorage) {
       const token = sessionStorage.getItem('token');
-
+  
       if (token) {
         try {
           const decoded: any = jwtDecode(token);
           this.userId = decoded?.sub || null;
-
+  
           if (this.userId) {
+            // Obtener datos del usuario
             this.apiService.obtenerUsuario(this.userId).subscribe({
               next: (data) => {
                 this.nombreUsuario = data.name;
@@ -63,6 +67,16 @@ export class MenuComponent implements OnInit, OnDestroy {
               },
               error: (err) => {
                 console.error('Error al obtener usuario:', err);
+              }
+            });
+  
+            // Obtener negocios del usuario
+            this.apiService.getMiNegocio().subscribe({
+              next: (res) => {
+                this.negocios = res; // array de negocios
+              },
+              error: (err) => {
+                console.error('Error al obtener los negocios:', err);
               }
             });
           }
@@ -75,25 +89,27 @@ export class MenuComponent implements OnInit, OnDestroy {
         this.router.navigate(['/login']);
       }
     }
-
+  
+    // Suscribirse al carrito
     this.carritoSubscription = this.apiService.carrito$.subscribe((data: any) => {
       const scrollElement = this.carritoScroll?.nativeElement;
       const currentScrollTop = scrollElement?.scrollTop || 0;
-
+  
       this.carrito = Array.isArray(data.carrito)
         ? data.carrito
         : (Array.isArray(data.carrito?.carrito) ? data.carrito.carrito : []);
-
+  
       this.actualizarTotales();
-
+  
       // Restaurar scroll sin saltar
       setTimeout(() => {
         if (scrollElement) scrollElement.scrollTop = currentScrollTop;
       }, 50);
     });
-
+  
     this.apiService.refrescarCarrito();
   }
+  
 
   ngOnDestroy(): void {
     if (this.carritoSubscription) {
@@ -196,5 +212,9 @@ export class MenuComponent implements OnInit, OnDestroy {
     if (btn) btn.click();
 
     this.router.navigate(['/carrito-cliente']);
+  }
+
+  toggleNegocio(id: number) {
+    this.expandedNegocioId = this.expandedNegocioId === id ? null : id;
   }
 }

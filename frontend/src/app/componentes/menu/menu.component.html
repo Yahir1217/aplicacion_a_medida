@@ -254,73 +254,128 @@
           <!-- Botón menú móvil -->
 
 
-        <!-- Menú -->
-        <ul id="navbar-nav" class="navbar-nav" [class.d-none]="!mobileMenuOpen && isMobile()">
-          <!-- 🔽 Separador -->
-          <li class="menu-title mt-3 mb-1 px-3 text-muted text-uppercase fw-bold small">
-            Cliente
-          </li>          
-          <li class="nav-item">
-            <a routerLink="/inicio" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-              <i class="las la-home"></i>
-              <span>Inicio</span>
-            </a>
-          </li>
+<!-- Menú -->
+<ul id="navbar-nav" class="navbar-nav" [class.d-none]="!mobileMenuOpen && isMobile()">
 
-                      <!-- 🔽 Separador -->
-                      <li class="menu-title mt-3 mb-1 px-3 text-muted text-uppercase fw-bold small">
-                        Emprendedor
-                      </li>
-                      <li class="nav-item">
-                        <a routerLink="/mis-negocios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-                          <i class="las la-home"></i>
-                          <span>Mis negocios</span>
-                        </a>
-                      </li>
+  <!-- 🔽 Separador Cliente -->
+  <li class="menu-title mt-3 mb-1 px-3 text-muted text-uppercase fw-bold small">
+    Cliente
+  </li>          
 
-          <!-- 🔽 Separador -->
-          <li class="menu-title mt-3 mb-1 px-3 text-muted text-uppercase fw-bold small">
-            Administrador
-          </li>
+  <li class="nav-item">
+    <a routerLink="/inicio" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+      <i class="las la-home"></i>
+      <span>Inicio</span>
+    </a>
+  </li>
 
-          <!-- Nueva ruta -->
-          <li class="nav-item">
-            <a routerLink="/inicio-administrador" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-              <i class="las la-tools"></i>
-              <span>Inicio Administrador</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/roles" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-              <i class="las la-file-alt"></i>
-              <span>Roles</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/usuarios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-              <i class="las la-file-alt"></i>
-              <span>Usuarios</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/categorias" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-              <i class="las la-file-alt"></i>
-              <span>Categorías</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/negocios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-              <i class="las la-file-alt"></i>
-              <span>Negocios</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/reportes" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
-              <i class="las la-file-alt"></i>
-              <span>Reportes de publicaciones</span>
-            </a>
-          </li>
-        </ul>
+  <!-- 🔽 Separador Emprendedor -->
+  <li class="menu-title mt-3 mb-1 px-3 text-muted text-uppercase fw-bold small">
+    Emprendedor
+  </li>
+
+  <li class="nav-item">
+    <a routerLink="mis-negocios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+      <i class="las la-store-alt"></i>
+      <span>Negocios</span>
+    </a>
+  </li>
+  
+  <li class="nav-item" *ngFor="let negocio of negocios">
+    <a href="javascript:void(0);"
+       class="nav-link menu-link d-flex justify-content-between align-items-center"
+       (click)="toggleNegocio(negocio.id)">
+      <span>
+        <i class="las la-store"></i>
+        {{ negocio.nombre }}
+      </span>
+      <img 
+        [src]="expandedNegocioId === negocio.id 
+                ? 'https://cdn-icons-png.flaticon.com/512/271/271228.png' 
+                : 'https://cdn-icons-png.flaticon.com/512/32/32195.png'" 
+        alt="icon" 
+        width="16" 
+        height="16"
+        style="margin-left: 8px;">
+    </a>
+  
+    <ul *ngIf="expandedNegocioId === negocio.id" class="nav flex-column ms-3">
+      <li class="nav-item">
+        <a [routerLink]="['/negocio', negocio.id, 'productos']"
+           routerLinkActive="active" class="nav-link menu-link"
+           (click)="mobileMenuOpen = false">
+          <i class="las la-box"></i>
+          <span>Productos</span>
+        </a>
+      </li>
+      
+      <li class="nav-item">
+        <a [routerLink]="['/negocio', negocio.id]" 
+           routerLinkActive="active" 
+           [routerLinkActiveOptions]="{ exact: true }" 
+           class="nav-link menu-link"
+           (click)="mobileMenuOpen = false">
+          <i class="las la-id-badge"></i>
+          <span>Perfil</span>
+        </a>
+      </li>
+      
+      <li class="nav-item">
+        <a [routerLink]="['/negocio', negocio.id, 'pedidos']"
+           routerLinkActive="active" class="nav-link menu-link"
+           (click)="mobileMenuOpen = false">
+          <i class="las la-chart-bar"></i>
+          <span>Pedidos</span>
+        </a>
+      </li>
+    </ul>
+  </li>
+  
+
+  <!-- 🔽 Separador Administrador -->
+  <li class="menu-title mt-3 mb-1 px-3 text-muted text-uppercase fw-bold small">
+    Administrador
+  </li>
+
+  <li class="nav-item">
+    <a routerLink="/inicio-administrador" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+      <i class="las la-tools"></i>
+      <span>Inicio Administrador</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a routerLink="/roles" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+      <i class="las la-user-shield"></i>
+      <span>Roles</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a routerLink="/usuarios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+      <i class="las la-users"></i>
+      <span>Usuarios</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a routerLink="/categorias" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+      <i class="las la-tags"></i>
+      <span>Categorías</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a routerLink="/negocios" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+      <i class="las la-store-alt"></i>
+      <span>Negocios</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a routerLink="/reportes" routerLinkActive="active" class="nav-link menu-link" (click)="mobileMenuOpen = false">
+      <i class="las la-file-invoice"></i>
+      <span>Reportes de publicaciones</span>
+    </a>
+  </li>
+
+</ul>
+
 
         </div>
       </div>

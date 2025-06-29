@@ -80,7 +80,14 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadComponent: () =>
       import('./componentes/generales/carrito-cliente/carrito-cliente.component').then(m => m.CarritoClienteComponent),
-  }
+  },
+  {
+    path: 'negocio/:id/pedidos',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./componentes/emprendedor/negocio-ordenes/negocio-ordenes.component').then(m => m.NegocioOrdenesComponent),
+  },
+  
   
   
 ];

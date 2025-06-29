@@ -472,6 +472,12 @@ obtenerTarjetasStripe(tipo: 'cliente' | 'negocio', negocio_id: number | null = n
 
   return this.http.get(`${this.apiUrl}/stripe/tarjetas`, { headers, params });
 }
+
+generarOnboardingLink(negocioId: number): Observable<any> {
+  const headers = this.getAuthHeaders();
+  return this.http.post(`${this.apiUrl}/stripe/negocios/${negocioId}/onboarding`, {}, { headers });
+}
+
  
 
 actualizarVisibilidadUsuario(id: string, visible: number) {
@@ -547,6 +553,21 @@ actualizarDireccionNegocio(
     datos,
     { headers: this.getAuthHeaders() }
   );
+}
+
+guardarCompra(data: any) {
+  const token = sessionStorage.getItem('token');
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  });
+  return this.http.post(`${this.apiUrl}/guardar-compra`, data, { headers });
+}
+
+obtenerOrdenesNegocio(negocioId: number): Observable<any> {
+  return this.http.get<any>(`${this.apiUrl}/negocios/${negocioId}/ordenes`, {
+    headers: this.getAuthHeaders()
+  });
 }
 
 

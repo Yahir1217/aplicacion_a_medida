@@ -1,0 +1,348 @@
+<div class="row">
+    <div class="col-lg-12">
+      <div class="card" id="orderList">
+  
+        <!-- Vista principal: lista de pedidos -->
+        <div *ngIf="!vistaDetalle">
+          <div class="card-header border-0">
+            <div class="row align-items-center gy-3">
+              <div class="col-sm">
+                <h5 class="card-title mb-0">Historial de pedidos</h5>
+              </div>
+              <div class="col-sm-auto">
+                <div class="d-flex gap-1 flex-wrap">
+                  <button type="button" class="btn btn-primary add-btn" data-bs-toggle="modal" id="create-btn" data-bs-target="#showModal">
+                    <i class="ri-add-line align-bottom me-1"></i> Nuevo pedido
+                  </button>
+                  <button type="button" class="btn btn-secondary">
+                    <i class="ri-file-download-line align-bottom me-1"></i> Importar
+                  </button>
+                  <button class="btn btn-soft-danger" id="remove-actions">
+                    <i class="ri-delete-bin-2-line"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <div class="card-body border border-dashed border-end-0 border-start-0">
+            <form>
+              <div class="row g-3">
+                <div class="col-xxl-5 col-sm-6">
+                  <div class="search-box position-relative">
+                    <input
+                      type="text"
+                      class="form-control search"
+                      placeholder="Buscar pedido, cliente, estado..."
+                      [(ngModel)]="textoBusqueda"
+                      name="searchText"
+                      (input)="filtrarOrdenes()"
+                    />
+                    <i class="ri-search-line search-icon"></i>
+                  </div>
+                </div>
+  
+                <div class="col-xxl-2 col-sm-6">
+                  <input
+                    type="date"
+                    class="form-control"
+                    [(ngModel)]="fechaSeleccionada"
+                    name="fecha"
+                    (change)="filtrarOrdenes()"
+                    placeholder="Selecciona fecha"
+                  />
+                </div>
+  
+                <div class="col-xxl-2 col-sm-4">
+                  <select
+                    class="form-control"
+                    [(ngModel)]="estadoSeleccionado"
+                    (change)="filtrarOrdenes()"
+                    name="estado"
+                  >
+                    <option value="">Estado</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="En camino">En camino</option>
+                    <option value="Entregado">Entregado</option>
+                    <option value="Cancelado">Cancelado</option>
+                  </select>
+                </div>
+  
+                <div class="col-xxl-2 col-sm-4">
+                  <select
+                    class="form-control"
+                    [(ngModel)]="pagoSeleccionado"
+                    (change)="filtrarOrdenes()"
+                    name="pago"
+                  >
+                    <option value="">Pago</option>
+                    <option value="Tarjeta">Tarjeta</option>
+                    <option value="Efectivo">Efectivo</option>
+                  </select>
+                </div>
+  
+                <div class="col-xxl-1 col-sm-4">
+                  <button
+                    type="button"
+                    class="btn btn-primary w-100"
+                    (click)="filtrarOrdenes()"
+                  >
+                    <i class="ri-equalizer-fill me-1 align-bottom"></i> Filtrar
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+  
+          <div class="card-body pt-0">
+            <div>
+              <ul class="nav nav-tabs nav-tabs-custom nav-success mb-3" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link py-3" [ngClass]="{'active': estadoSeleccionado === ''}" (click)="filtroEstado('')" href="javascript:void(0)">
+                    <i class="ri-store-2-fill me-1 align-bottom"></i> Todos
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link py-3" [ngClass]="{'active': estadoSeleccionado === 'Entregado'}" (click)="filtroEstado('Entregado')" href="javascript:void(0)">
+                    <i class="ri-checkbox-circle-line me-1 align-bottom"></i> Entregados
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link py-3" [ngClass]="{'active': estadoSeleccionado === 'En camino'}" (click)="filtroEstado('En camino')" href="javascript:void(0)">
+                    <i class="ri-truck-line me-1 align-bottom"></i> En camino
+                    <span class="badge bg-danger align-middle ms-1">{{ contarEnCamino() }}</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link py-3" [ngClass]="{'active': estadoSeleccionado === 'Cancelado'}" (click)="filtroEstado('Cancelado')" href="javascript:void(0)">
+                    <i class="ri-close-circle-line me-1 align-bottom"></i> Cancelados
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link py-3" [ngClass]="{'active': estadoSeleccionado === 'Pendiente'}" (click)="filtroEstado('Pendiente')" href="javascript:void(0)">
+                    <i class="ri-time-line me-1 align-bottom"></i> Pendientes
+                  </a>
+                </li>
+              </ul>
+  
+              <div class="table-responsive table-card mb-1">
+                <table class="table table-nowrap align-middle" id="orderTable">
+                  <thead class="text-muted table-light">
+                    <tr class="text-uppercase">
+                      <th>Pedido ID</th>
+                      <th>Cliente</th>
+                      <th>Dirección</th>
+                      <th>Pago</th>
+                      <th>Entrega</th>
+                      <th>Estado</th>
+                      <th>Fecha</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let orden of ordenesFiltradas">
+
+                      <td>#{{ orden.pedido_id }}</td>
+                      <td>{{ orden.pedido.user?.name || '-' }}</td>
+                      <td>{{ orden.pedido.direccion?.referencia || '-' }}</td>
+                      <td>{{ orden.pedido.metodo_pago }}</td>
+                      <td>{{ orden.tipo_entrega }}</td>
+                      <td>
+                        <span class="badge"
+                          [ngClass]="{
+                            'bg-warning-subtle text-warning': orden.estado === 'Pendiente',
+                            'bg-success-subtle text-success': orden.estado === 'Entregado',
+                            'bg-primary-subtle text-primary': orden.estado === 'En camino',
+                            'bg-danger-subtle text-danger': orden.estado === 'Cancelado'
+                          }">{{ orden.estado }}</span>
+                      </td>
+                      <td>{{ orden.created_at | date:'short' }}</td>
+                      <td>
+                        <ul class="list-inline hstack gap-2 mb-0">
+                          <li class="list-inline-item" title="Ver">
+                            <a class="text-primary d-inline-block" (click)="verDetalle(orden)">
+                              <i class="ri-eye-fill fs-16"></i>
+                            </a>
+                          </li>
+                          <li class="list-inline-item" title="Editar">
+                            <a href="#" class="text-primary d-inline-block">
+                              <i class="ri-pencil-fill fs-16"></i>
+                            </a>
+                          </li>
+                          <li class="list-inline-item" title="Eliminar">
+                            <a href="#" class="text-danger d-inline-block">
+                              <i class="ri-delete-bin-5-fill fs-16"></i>
+                            </a>
+                          </li>
+                        </ul>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div *ngIf="ordenesFiltradas.length === 0" class="text-center mt-3 noresult">
+                  <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px; height:75px"></lord-icon>
+                  <h5 class="mt-2">No se encontraron pedidos</h5>
+                  <p class="text-muted">No hay resultados para la búsqueda o filtros aplicados.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+<!-- Aquí va la nueva vista detalle -->
+<div *ngIf="vistaDetalle" class="page-content">
+    <div class="container-fluid">
+  
+      <!-- start page title -->
+      <div class="row">
+        <div class="col-12">
+          <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">Detalle del pedido #{{ ordenSeleccionada?.pedido_id }}</h4>
+            <div class="page-title-right">
+              <ol class="breadcrumb m-0">
+                <li class="breadcrumb-item"><a href="javascript:void(0);">Pedidos</a></li>
+                <li class="breadcrumb-item active">Detalle</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end page title -->
+  
+      <div class="row">
+        <!-- Col principal -->
+        <div class="col-xl-9">
+          <!-- Pedido -->
+          <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h5 class="card-title mb-0">Pedido #{{ ordenSeleccionada?.pedido_id }}</h5>
+              <button class="btn btn-light btn-sm" (click)="regresarLista()">
+                <i class="ri-arrow-left-line me-1"></i> Regresar
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive table-card">
+                <table class="table table-nowrap align-middle table-borderless mb-0">
+                  <thead class="table-light text-muted">
+                    <tr>
+                      <th>Producto</th>
+                      <th>Precio Unitario</th>
+                      <th>Cantidad</th>
+                      <th class="text-end">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let producto of ordenSeleccionada?.productos">
+                      <td>
+                        <div class="d-flex">
+                          <div class="flex-shrink-0 avatar-md bg-light rounded p-1">
+                            <img [src]="producto.producto?.foto" alt="{{ producto.producto?.nombre }}" class="img-fluid d-block">
+                          </div>
+                          <div class="flex-grow-1 ms-3">
+                            <h5 class="fs-16 mb-0">{{ producto.producto?.nombre }}</h5>
+                          </div>
+                        </div>
+                      </td>
+                      <td>${{ producto.precio_unitario }}</td>
+                      <td>{{ producto.cantidad }}</td>
+                      <td class="fw-medium text-end">
+                        ${{ (producto.precio_unitario * producto.cantidad) | number:'1.2-2' }}
+                      </td>
+                    </tr>
+  
+                    <!-- Totales -->
+<!-- Totales -->
+<tr class="border-top border-top-dashed">
+  <td colspan="2"></td>
+  <td colspan="2" class="fw-medium p-0">
+    <table class="table table-borderless mb-0">
+      <tbody>
+        <tr>
+          <td>Sub Total :</td>
+          <td class="text-end">${{ getSubtotal() | number:'1.2-2' }}</td>
+        </tr>
+        <tr class="border-top border-top-dashed">
+          <th>Total :</th>
+          <th class="text-end">${{ getTotal() | number:'1.2-2' }}</th>
+        </tr>
+      </tbody>
+    </table>
+  </td>
+</tr>
+
+  
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!--end card-->
+  
+          <!-- Mapa debajo de la tabla de pedidos -->
+          <div class="card mt-3">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Ubicación</h5>
+            </div>
+            <div class="card-body">
+              <div id="map" class="rounded shadow-sm" style="height: 350px; width: 100%;"></div>
+            </div>
+          </div>
+          <!--end card-->
+        </div>
+        <!--end col-->
+  
+        <!-- Col lateral -->
+        <div class="col-xl-3">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Cliente</h5>
+            </div>
+            <div class="card-body text-center">
+              <img [src]="ordenSeleccionada?.pedido.user?.foto_perfil" alt="{{ ordenSeleccionada?.pedido.user?.name }}" class="avatar-lg rounded mb-2">
+              <h6 class="fs-15 mb-1">{{ ordenSeleccionada?.pedido.user?.name }}</h6>
+              <p class="text-muted mb-0">{{ ordenSeleccionada?.pedido.user?.telefono }}</p>
+            </div>
+          </div>
+          <!--end card-->
+  
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Dirección</h5>
+            </div>
+            <div class="card-body">
+              <p class="mb-0">{{ ordenSeleccionada?.pedido.direccion?.referencia }}</p>
+            </div>
+          </div>
+          <!--end card-->
+  
+          <!-- Información del pedido debajo de dirección -->
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Información del pedido</h5>
+            </div>
+            <div class="card-body">
+              <p><strong>Cliente:</strong> {{ ordenSeleccionada?.pedido.user?.name }}</p>
+              <p><strong>Teléfono:</strong> {{ ordenSeleccionada?.pedido.user?.telefono }}</p>
+              <p><strong>Dirección:</strong> {{ ordenSeleccionada?.pedido.direccion?.referencia }}</p>
+              <p><strong>Estado:</strong> {{ ordenSeleccionada?.estado }}</p>
+              <p><strong>Tipo de entrega:</strong> {{ ordenSeleccionada?.tipo_entrega }}</p>
+              <p><strong>Método de pago:</strong> {{ ordenSeleccionada?.pedido.metodo_pago }}</p>
+              <p><strong>Comentario:</strong> {{ ordenSeleccionada?.comentario || '-' }}</p>
+              <p><strong>Fecha:</strong> {{ ordenSeleccionada?.created_at | date:'short' }}</p>
+            </div>
+          </div>
+          <!--end card-->
+        </div>
+        <!--end col-->
+      </div>
+      <!--end row-->
+  
+    </div><!-- container-fluid -->
+  </div><!-- end page-content -->
+  
+          
+  
+      </div>
+    </div>
+  </div>
+  

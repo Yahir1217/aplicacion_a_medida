@@ -568,13 +568,29 @@ public function GuardarPublicacionUsuario(Request $request)
 
 public function obtenerMiNegocios(Request $request)
 {
-    $user_id = $request->input('user_id'); // <- se recibe desde query ?user_id=
+    $user_id = $request->input('user_id'); // se recibe desde query ?user_id=
 
-    $negocios = Negocio::where('user_id', $user_id)
+    // Traer los negocios con la relación stripeCustomer
+    $negocios = Negocio::with('stripeCustomer')
+        ->where('user_id', $user_id)
         ->select('id', 'nombre', 'logo_url', 'estado', 'fecha_pago', 'fecha_vencimiento')
         ->get();
 
-    return response()->json($negocios);
+    // Transformamos para incluir stripe_account_id
+    $negociosTransformados = $negocios->map(function ($negocio) {
+        return [
+            'id' => $negocio->id,
+            'nombre' => $negocio->nombre,
+            'logo_url' => $negocio->logo_url,
+            'estado' => $negocio->estado,
+            'fecha_pago' => $negocio->fecha_pago,
+            'fecha_vencimiento' => $negocio->fecha_vencimiento,
+            'stripe_account_id' => optional($negocio->stripeCustomer)->stripe_account_id,
+            'tarjetas' => [] // para que Angular luego las llene
+        ];
+    });
+
+    return response()->json($negociosTransformados);
 }
 
 

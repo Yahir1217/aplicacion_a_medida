@@ -41,6 +41,11 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
+    public function pedidos()
+    {
+        return $this->hasMany(Pedido::class);
+    }
+
     public function negocios(): HasMany
     {
         return $this->hasMany(Negocio::class);
@@ -66,16 +71,13 @@ class User extends Authenticatable implements JWTSubject
     }
     public function stripeCustomer()
     {
-        return $this->morphOne(StripeCustomer::class, 'stripeCustomerable');
+        return $this->morphOne(StripeCustomer::class, 'stripe_customerable');
     }
+    
+         
     public function direcciones()
     {
         return $this->hasMany(Direccion::class);
     }
-
-    
-
-
-
 
 }

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\ProductoController;
 use App\Http\Controllers\Api\CarritoProductoController;
 use App\Http\Controllers\Api\StripeTarjetaController;
 use App\Http\Controllers\Api\DireccionController;
+use App\Http\Controllers\Api\CompraController;
 
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
@@ -107,6 +108,7 @@ Route::middleware('auth:api')->group(function () {
     ///STRIPEA
     Route::post('/stripe/tarjetas', [StripeTarjetaController::class, 'store']);
     Route::get('/stripe/tarjetas', [StripeTarjetaController::class, 'obtenerTarjetas']);
+    Route::post('/stripe/negocios/{id}/onboarding', [StripeTarjetaController::class, 'generarOnboardingLink']);
 
     ///DIRECCION
     Route::post('/usuarios/{userId}/direccion', [DireccionController::class, 'crearDireccion']);
@@ -114,6 +116,12 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/negocios/{negocioId}/direccion', [DireccionController::class, 'crearDireccionNegocio']);
     Route::put('/negocios/{negocioId}/direccion/{direccionId}', [DireccionController::class, 'actualizarDireccionNegocio']);
+
+    ///Guardar compra
+    Route::post('/guardar-compra', [CompraController::class, 'guardarCompra']);
+
+    ///Negocios
+    Route::get('/negocios/{id}/ordenes', [CompraController::class, 'ordenes']);
 
     
 

@@ -16,6 +16,7 @@ declare var bootstrap: any;
 })
 export class MisTarjetasComponent implements AfterViewInit, OnDestroy {
   @ViewChild('modalTarjetaRef') modalTarjetaRef!: ElementRef;
+  @ViewChild('modalOnboardingRef') modalOnboardingRef!: ElementRef;
 
   stripe: Stripe | null = null;
   elements: StripeElements | null = null;
@@ -27,6 +28,8 @@ export class MisTarjetasComponent implements AfterViewInit, OnDestroy {
   mostrarTarjetasCliente: boolean = false;
   cardErrors: string = '';
   modalInstance: any;
+  modalOnboardingInstance: any;
+  onboardingUrl: string = '';
   mostrarTarjetas = false;
 
   constructor(private apiService: ApiService) {}
@@ -63,14 +66,9 @@ export class MisTarjetasComponent implements AfterViewInit, OnDestroy {
           fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
           fontSmoothing: 'antialiased',
           fontSize: '16px',
-          '::placeholder': {
-            color: '#aab7c4'
-          }
+          '::placeholder': { color: '#aab7c4' }
         },
-        invalid: {
-          color: '#fa755a',
-          iconColor: '#fa755a'
-        }
+        invalid: { color: '#fa755a', iconColor: '#fa755a' }
       }
     });
 
@@ -85,7 +83,9 @@ export class MisTarjetasComponent implements AfterViewInit, OnDestroy {
     this.apiService.getMiNegocio().subscribe({
       next: (res) => {
         this.negocios = res;
-        this.cargarTarjetasNegocios(); // cargar tarjetas de cada negocio
+        console.log('Negocios cargados:', this.negocios);
+
+        this.cargarTarjetasNegocios();
       },
       error: (err) => {
         console.error('Error al obtener negocios:', err);
@@ -111,8 +111,8 @@ export class MisTarjetasComponent implements AfterViewInit, OnDestroy {
           negocio.tarjetas = res.tarjetas || [];
         },
         error: (err) => {
-          console.error(`Error al obtener tarjeta del negocio ${negocio.nombre}`, err);
-          negocio.tarjeta = null;
+          console.error(`Error al obtener tarjetas del negocio ${negocio.nombre}`, err);
+          negocio.tarjetas = null;
         }
       });
     });
@@ -141,6 +141,10 @@ export class MisTarjetasComponent implements AfterViewInit, OnDestroy {
     if (this.modalInstance) this.modalInstance.hide();
   }
 
+  cerrarModalOnboarding() {
+    if (this.modalOnboardingInstance) this.modalOnboardingInstance.hide();
+  }
+
   async registrarTarjeta(event: Event) {
     event.preventDefault();
 
@@ -164,10 +168,19 @@ export class MisTarjetasComponent implements AfterViewInit, OnDestroy {
       negocio_id: this.negocioSeleccionado?.id ?? null
     }).subscribe({
       next: (res) => {
-        console.log('Tarjeta registrada con éxito', res);
+        console.log('Respuesta backend:', res);
         this.cerrarModal();
         this.cargarNegocios();
         this.cargarTarjetasCliente();
+
+        // Si hay link de onboarding, mostrar modal
+        if (res.onboarding_url) {
+          this.onboardingUrl = res.onboarding_url;
+          if (!this.modalOnboardingInstance) {
+            this.modalOnboardingInstance = new bootstrap.Modal(this.modalOnboardingRef.nativeElement);
+          }
+          this.modalOnboardingInstance.show();
+        }
       },
       error: (err) => {
         console.error('Error al registrar tarjeta', err);
@@ -179,21 +192,37 @@ export class MisTarjetasComponent implements AfterViewInit, OnDestroy {
   contarTarjetasNegocios(): number {
     return this.negocios.reduce((acc, negocio) => acc + (negocio.tarjetas?.length || 0), 0);
   }
-  
+
   eliminarTarjeta(id: number) {
-    // Implementa la lógica para eliminar tarjeta
     console.log('Eliminar tarjeta con id:', id);
+    // Aquí puedes implementar la lógica para eliminar la tarjeta
   }
 
   verTarjetasCliente() {
     this.mostrarTarjetasCliente = true;
-    this.negocioSeleccionado = null; // Desactiva el negocio seleccionado
+    this.negocioSeleccionado = null;
   }
 
   verTarjetas(negocio: any) {
     this.negocioSeleccionado = negocio;
-    this.mostrarTarjetasCliente = false; // Desactiva la vista de tarjetas cliente
+    this.mostrarTarjetasCliente = false;
+  }
+
+  generarOnboardingLink(negocioId: number) {
+    this.apiService.generarOnboardingLink(negocioId).subscribe({
+      next: (res) => {
+        if (res.url) {
+          this.onboardingUrl = res.url;
+          if (!this.modalOnboardingInstance) {
+            this.modalOnboardingInstance = new bootstrap.Modal(this.modalOnboardingRef.nativeElement);
+          }
+          this.modalOnboardingInstance.show();
+        }
+      },
+      error: (err) => {
+        console.error('Error al generar onboarding link', err);
+      }
+    });
   }
   
-
 }

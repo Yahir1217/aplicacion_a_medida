@@ -30,6 +30,11 @@ class Negocio extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function pedidoNegocios()
+    {
+        return $this->hasMany(PedidoNegocio::class);
+    }
+
     public function redesSociales()
     {
         return $this->hasMany(NegocioRedSocial::class);
@@ -66,8 +71,9 @@ class Negocio extends Model
     }
     public function stripeCustomer()
     {
-        return $this->morphOne(StripeCustomer::class, 'stripeCustomerable');
+        return $this->morphOne(StripeCustomer::class, 'stripe_customerable');
     }
+    
     public function direcciones()
     {
         return $this->hasMany(Direccion::class);

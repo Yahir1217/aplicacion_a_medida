@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
 import maplibregl from 'maplibre-gl';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-carrito-cliente',
@@ -49,6 +50,7 @@ export class CarritoClienteComponent implements OnInit, OnDestroy {
   tarjetas: any[] = [];
   tarjetaSeleccionadaId: string | null = null;
 
+  activeTab = 'productos';
 
 
   constructor(private apiService: ApiService) {}
@@ -327,5 +329,51 @@ actualizarMapa() {
     this.mapaLibre = null;
   }
 }
+
+
+  ////GUARDAR COMPRAR
+
+  guardarCompra() {
+    const datosCompra = {
+      user_id: this.usuario.id,
+      direccion_id: this.direccionSeleccionada?.id,
+      metodo_pago: this.metodoPago,
+      tarjeta_id: this.metodoPago === 'tarjeta' ? this.tarjetaSeleccionadaId : null,
+      subtotal: this.subtotalProductos,
+      comision: this.metodoPago === 'tarjeta' ? this.comisionServicio : 0,
+      total: this.totalClientePaga,
+      negocios: this.carritoAgrupado.map(negocio => ({
+        negocio_id: negocio.id,
+        tipo_entrega: this.entregasPorNegocio[negocio.id],
+        comentario: this.comentariosPorNegocio[negocio.id]?.habilitado ? this.comentariosPorNegocio[negocio.id]?.texto : null,
+        productos: negocio.productos.map((item: any) => ({
+          producto_id: item.producto.id,
+          cantidad: item.cantidad,
+          precio_unitario: item.producto.precio
+        }))
+      }))
+    };
+  
+    this.apiService.guardarCompra(datosCompra).subscribe(
+      res => {
+        console.log('Compra guardada correctamente:', res);
+        Swal.fire({
+          icon: 'success',
+          title: '¡Compra realizada!',
+          text: 'Tu pedido ha sido guardado con éxito.',
+          confirmButtonText: 'Aceptar'
+        });
+      },
+      err => {
+        console.error('Error al guardar la compra:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Hubo un problema al guardar la compra. Intenta de nuevo.',
+          confirmButtonText: 'Aceptar'
+        });
+      }
+    );
+  }
 
 }  
